@@ -33,4 +33,8 @@ class Vec2 {
   String toString() {
     return this.x + " " + this.y;
   }
+  
+  float length() {
+    return sqrt(x * x + y * y);
+  }
 }

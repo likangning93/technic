@@ -98,15 +98,14 @@ class Solver {
       float r2 = shared.b2_pos;
       if (shared.b1 == solvedBeam1) r2 = unsolved1ToSolved.b1_pos;
       
-      Vec2 solvedPoint = circleIntersect(p1.x, p1.y, r1, p2.x, p2.y, r2, pCurr1.x, pCurr1.y);
+      Vec2 solvedPoint = circleIntersect(p1.x, p1.y, r1, p2.x, p2.y, r2, pCurr2.x, pCurr2.y);
       
-      println("p1 is " + p1.toString() + " radius is " + r1);
-      println("p2 is " + p2.toString() + " radius is " + r2);
-      println("pCurr2 is " + pCurr2.toString());
-      println("pCurr1 is " + pCurr1.toString());     
+      //println("p1 is " + p1.toString() + " radius is " + r1);
+      //println("p2 is " + p2.toString() + " radius is " + r2);
+      //println("pCurr2 is " + pCurr2.toString());
+      //println("pCurr1 is " + pCurr1.toString());
       
-      println("solved point is " + solvedPoint.toString());
-      println();
+      //println("solved point is " + solvedPoint.toString());
       
       // compute corrected orientations for the two unsolved beams
       Vec2 orient1 = solvedPoint.sub(p1);
@@ -117,8 +116,9 @@ class Solver {
       unsolved1.rotation = angle1;
       unsolved2.rotation = angle2;
       
-      //setAnglePosition(unsolved1ToSolved, angle1, solvedBeam1, unsolved1);
-      //setAnglePosition(unsolved2ToSolved, angle2, solvedBeam2, unsolved2);
+      //println("angle for 1 is: " + angle1);
+      //println("angle for 2 is: " + angle2);
+      //println();
       
       noFill();
       stroke(0, 255, 0);
@@ -129,9 +129,6 @@ class Solver {
       ellipse(p2.x, p2.y, r2 * 2.0, r2 * 2.0);      
       stroke(0, 255, 255);
       ellipse(solvedPoint.x, solvedPoint.y, 8, 8);
-      
-      // evaluate debug:
-      println(sqrt(pow((solvedPoint.x - p1.x), 2.0) + pow((solvedPoint.y - p1.y), 2.0)) + " looks right?");
       
       // recurse on the unsolved beams
       recursive_solve(unsolved1, timestamp);
@@ -204,9 +201,44 @@ float quadratic(float a, float b, float c, boolean pos) {
   return (-b + plusMinus * sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
 }
 
-Vec2 circleIntersect(float x1, float y1, float r1, float x2, float y2, float r2, float curr_x, float curr_y) {
+Vec2 circleIntersect(float p0_x, float p0_y, float r0, float p1_x, float p1_y, float r1, float curr_x, float curr_y) {
   // http://paulbourke.net/geometry/circlesphere/
+  // distance d between circle centers
+  float d_x = p0_x - p1_x;
+  float d_y = p0_y - p1_y;
+  float d = sqrt(d_x * d_x + d_y * d_y);
+  if (d > r0 + r1) return null; // circles separate
+  if (d < abs(r0 - r1)) return null; // one circle fully inside other
   
+  float a = (r0 * r0 - r1 * r1 + d * d) / (2.0 * d);
+  float h = sqrt(r0 * r0 - a * a);
+  
+  float p2_x = p0_x + a * (p1_x - p0_x) / d;
+  float p2_y = p0_y + a * (p1_y - p0_y) / d;
+  
+  float p3_1x = p2_x + h * (p1_y - p0_y) / d;
+  float p3_1y = p2_y - h * (p1_x - p0_x) / d;
+  
+  float p3_2x = p2_x - h * (p1_y - p0_y) / d;
+  float p3_2y = p2_y + h * (p1_x - p0_x) / d;
+  
+  float dist_1_x = p3_1x - curr_x;
+  float dist_1_y = p3_1y - curr_y;
+  
+  float dist_2_x = p3_2x - curr_x;
+  float dist_2_y = p3_2y - curr_y;  
+  
+   println("got positions: " + p3_1x + " " + p3_1y + " and " + p3_2x + " " + p3_2y);
+   println("comparing to: " + curr_x + " " + curr_y);
+   println();  
+  
+   stroke(255, 0, 255);
+   ellipse(curr_x, curr_y, 4, 4);
+  
+   if (dist_2_x * dist_2_x + dist_2_y * dist_2_y > dist_1_x * dist_1_x + dist_1_y * dist_1_y) {
+    return new Vec2(p3_1x, p3_1y);
+  }
+  else return new Vec2(p3_2x, p3_2y);
   
   /* derived straight from the formulas. seems to have numerical error problems
   float z1 = (r1 * r1 - r2 * r2) - (x1 * x1 - x2 * x2) - (y1 * y1 - y2 * y2);
