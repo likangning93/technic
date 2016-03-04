@@ -72,12 +72,14 @@ class Solver {
       Joint unsolved1ToSolved = unsolved1.getSolvedJoint(timestamp);
       Beam solvedBeam1 =unsolved1ToSolved.b2;
       if (solvedBeam1 == unsolved1) solvedBeam1 = unsolved1ToSolved.b1;
-      setAnglePosition(unsolved1ToSolved, 0.0, solvedBeam1, unsolved1);
+      // rotation here is a horrible hack, fix it!
+      setAnglePosition(unsolved1ToSolved, unsolved1.rotation - solvedBeam1.rotation, solvedBeam1, unsolved1);
       
       Joint unsolved2ToSolved = unsolved2.getSolvedJoint(timestamp);
       Beam solvedBeam2 =unsolved2ToSolved.b2;
       if (solvedBeam2 == unsolved2) solvedBeam1 = unsolved2ToSolved.b1;
-      setAnglePosition(unsolved2ToSolved, 0.0, solvedBeam2, unsolved2);      
+      // rotation here is a horrible hack, fix it!
+      setAnglePosition(unsolved2ToSolved, unsolved2.rotation - solvedBeam2.rotation, solvedBeam2, unsolved2);      
       
       // perform the circle solve to correct the two unsolved beams' orientations
       // http://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect
@@ -116,8 +118,8 @@ class Solver {
       unsolved1.rotation = angle1;
       unsolved2.rotation = angle2;
       
-      //println("angle for 1 is: " + angle1);
-      //println("angle for 2 is: " + angle2);
+      println("angle for 1 is: " + degrees(angle1));
+      println("angle for 2 is: " + degrees(angle2));
       //println();
       
       noFill();
@@ -273,5 +275,7 @@ float angleToPosition(float x, float y) {
   // cos(theta) = dot(a, b)
   float length = sqrt(x * x + y * y);
   float dot = x / length;
-  return acos(dot);
+  float angle = acos(dot);
+  if (y < 0) return angle;
+  else return -angle;
 }
