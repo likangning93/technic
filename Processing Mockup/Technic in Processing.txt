@@ -1,0 +1,69 @@
+Technic in Processing
+
+TODO
+-add a "joint" object
+	-each joint joins two objects
+	-if you have a joint simulating a long axle with many beams on it, just pile a bunch of joints
+	-store 2:
+		-pointer to geom
+		-length along the geom
+	-is_driver
+	-preferred angle
+
+-add a "geom" object
+	-has a "draw" method
+	-knows its own length
+	-knows the position of its center
+	-knows the rotation along the center
+	-list of joint objects (edges)
+	-(future) store rigid links
+
+-solver
+	...
+
+THE SOLVER
+-this definitely forms a graph:
+	-beams as nodes
+	-joints as edges
+-so we need a graph traversal algorithm -> DFS seems like a good choice here
+	-when evaluating an edge, must check if the linkage is a quadrilateral
+	-since it's a graph, any transformations we do to one node must percolate
+-for now, we'll only support quadrilateral linkages and now gears (yet)
+-needs a quad checker method
+-a beam can have as many joints as it wants, but all links must form quadrilaterals
+-solver must keep track of a "root" beam that doesn't move
+-solver must keep track of a list of driven joints
+
+DEGENERATE CASES
+-quad can only be solved if:
+	-1 angle is given and 1 position is given
+	-2 positions are given
+-triangles/self loops can't be solved
+-quad with 2 preferred angles should be declared degenerate
+
+
+ALGORITHM
+-set all preferred joint angles -> drivers
+	-for now, all drivers must be on the root
+
+recursive part: take in a beam and a timestamp
+-mark beam as up-to-date with timestamp
+-for each joint
+	-is linked beam up-to-date? continue.
+	-if joint has a preferred angle: -> only possible on root
+		-rotate other beam
+		-mark beam as up-to-date
+		-continue
+		>if linked beam has any other interactions, they must be connected back to this beam
+	-else check if joint links back to beam in exactly 3 beams
+		-if another beam along the chain is up-to-date OR there is a preferred angle along the link:
+			-circle solve
+			-mark each participating beam as up-to-date
+			-recurse on each participating beam
+		-else error
+-return
+
+CIRCLE SOLVE
+
+
+
