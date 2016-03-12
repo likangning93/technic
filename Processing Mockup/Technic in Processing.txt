@@ -1,3 +1,93 @@
+********************************************************************************
+03/12/2016
+Learned from Alpha
+-so this is a graph search
+-doing this recursively is a HUGE pain since we've been doing all our graph stuff iteratively
+-but it isn't quite BFS or DFS
+-on encountering a quad, we check the entire quad
+	-quad is solveable if two beams are determined
+	-if two beams are determined, remaining two are positioned
+	-then we assess the other two beams
+NEW ALGORITHM
+-let's do this iteratively with a queue of "positioned but unexplored"
+	-"fully explored" -> timestamp is up-to-date
+	-"positioned" -> new member var equivalent to "is in the queue" -> all joint positions finalized
+	-start with the queue just containing the root
+	-while queue.size > 0:
+		-pop an element
+		-if the element has already been fully explored, continue
+		-update timestamp here
+		-for each link to other_elem:
+			-if the other_elem has been "positioned," continue
+			-if joint to other_elem is a driver:
+				-update other_elem position, joint positions
+				-mark other_elem as "positioned"
+				-push other_elem onto queue
+				-continue
+			-use DFS_lim_4_subroutine to get a quad w/properties:
+				-at least two items are "positioned" or "fully explored"
+				-starts at this element
+				-QUAD IS STORED AS 4 JOINTS, NOT 4 BEAMS
+			-given valid quad:
+				-do circle solve to position each of the unsolved beams
+				-mark each as "positioned"
+				-push each onto queue
+-intuition:
+	-if a beam has multiple quads attached
+	-must be that the quads are conjoined
+	-so if quad is unsolved in pass of one beam, will be solved in pass on another
+
+-since now we're going to be marking beams as "positioned:"
+	-best if we add a method to beam that takes in new orientation, pos
+	-updates all joints' positions and timestamps
+	-if a joint is up-to-date but computed position doesn't match, throw error
+		-possible that this beam isn't long enough
+
+-accessing beam for joint position is super annoying and frequent
+-joints should probably know their own solver space positions
+	-idea is we iteratively "position" each element
+	-joint's position is "locked" once anything it is attached to is positioned
+	-if on any beam we can determine two joint positions, the beam is locked
+
+-come to think of it, joint positions are the "important" part of the solver
+-so rotational joints need to store:
+	-linkage local position
+	-preferred angle (driven angle) if attached to root and driven
+	-position along each beam
+	-we need an accessor
+	-timestamp indicating finality
+
+-prismatic joints store:
+	-length of overlap
+	-pointers to each beam
+
+Python Transition
+-there's pyglut -> pyopengl
+-pyglut has its own vector datatype
+
+UI doodles
+-each linkage should exist in its own rectangular plane with the root fixed
+-user should draw beams/gears and then draw joints
+	-should include an option to "trim" beams to size
+	-pistons (prismatic joints) should be addable as an "extendobeam"
+		-even though technically this is just a beam
+	-gears should also be drawn as a type of element
+		-gears should also auto-link to any overlapping gears, link by radius
+-joints must automatically bind beams together when placed
+	-this requires a point-in-rectangle check
+	-if when placing a "joint" detect that it is pinning two beams, form a link
+	-if joint detects pinning between more than two beams:
+		-need to form multiple joints
+		-one between first beam and each subsequent beam
+
+-necessary to allow linkage editing after drawing?
+	-useful for "prototyping" a linkage
+	-adjusting placements of joints on beams -> and possibly lengths of beams
+	-ideally would be able to just slide
+
+********************************************************************************
+Alpha
+
 Technic in Processing
 
 TODO
