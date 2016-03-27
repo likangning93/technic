@@ -1,14 +1,12 @@
 import pygame
 import sys
-import technicSolver
+#import technicSolver
 
 # help from https://www.cs.ucsb.edu/~pconrad/cs5nm/topics/pygame/drawing/
 
 pygame.init()
 clock = pygame.time.Clock() # for maintaining constant update time
 screen = pygame.display.set_mode((800,600)) # open a window
-
-pygame.display.update() # analogous to gl swap buffers I guess
 
 bg_color = (255, 255, 255)
 black = (0,0,0)
@@ -30,4 +28,4 @@ while True:
 	pos += 1
 
 	msElapsed = clock.tick(60) # force to 60 fps
-	pygame.display.update() # swap buffers
+	pygame.display.update() # analagous to swap buffers
