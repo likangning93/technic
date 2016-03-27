@@ -8,18 +8,60 @@ class Solver(object):
 		self.beams = []
 		self.joints = []
 
-	def solve(self):
+	def solve(self, timestamp):
 		return None
 
-	def quadCheck(self, beam):
+	def quadCheck(self, beam1, timestamp):
 		""" checks if the beam specified is part of a quad
 		input:
-			beam - Beam object
+			beam1 - Beam object
+			timestamp - timestamp for a "solved" beam
 		returns:
-			if the beam is part of a quad, returns a list of beams in the quad.
+			if beam1 is part of a quad with two solved beams,
+			returns a list of beams in the quad.
 			otherwise returns None
 		"""
-		# since we know we want a quad we can do this with a horrible nested FOR
+		# Nested For depth-limited DFS with path reconstruction
+		# for every beam linked to beam1:
+		#	for every beam linked to beam2:
+		#		for every beam linked to beam3:
+		#			for every beam linked to beam4:
+		#				check quad condition
+		#				return beam1, beam2, beam3, beam4 as a list
+
+		# Iterative depth-limited DFS with reconstruction
+		# datastructures:
+		#	pathCandidate -> stack of (beam, idxToExploreNext)
+		# push (beam1, 0) onto pathCandidate		
+		# while len(pathCandidate) > 0
+		# 	(currBeam, idx) = peek at pathCandidate
+		# 	if pathCandidate is at max length, check quad condition:
+		#		if condition holds, clean pathCandidate and return
+		#		else pop from pathCandidate
+		# 	else update top of pathCandidate and push another tuple on
+
+		pathCandidate = [beam1]
+		pathIndices = [0]
+
+		while len(pathCandidate) > 0:
+			if len(pathCandidate) == 4:
+				# check quad condition
+			else:
+				jointIdx = pathIndices[-1]
+				endBeam = pathCandidate[-1]
+				# check if we're out of nextBeams at this candidate
+				if jointIdx >= len(endBeam.joints):
+					pathCandidate.pop()
+					continue
+
+				nextBeam = endBeam.joints[jointIdx].getOtherBeam[endBeam]
+				# check sanity of nextBeam:
+				#	-can't already be in the list
+
+				pathIndices[-1] += 1
+				pathCandidate.append[nextBeam]
+				pathIndices.append[0]
+
 		return None
 
 
@@ -171,3 +213,8 @@ class Joint(object):
 
 	def getCurrentAngle(self):
 		return beam1.rotation - beam2.rotation
+
+	def getOtherbeam(self, beam1):
+		if self.beam1 is beam1: return self.beam2
+		if self.beam2 is beam2: return self.beam1
+		return None

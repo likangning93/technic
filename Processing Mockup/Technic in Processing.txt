@@ -1,4 +1,29 @@
 ********************************************************************************
+03/27/2016
+-quad finder subroutine is nontrivial
+-parameters:
+-must find quad given requirement that exactly two items are already solved
+Iterative depth-limited DFS with reconstruction
+
+datastructures:
+	pathCandidate -> stack of (beam, idxToExploreNext) <- implement as parallel lists, easier
+push (beam1, 0) onto pathCandidate		
+while len(pathCandidate) > 0
+	(currBeam, idx) = peek at pathCandidate
+	if pathCandidate is at max length, check quad condition:
+		if condition holds, clean pathCandidate and return
+		else pop from pathCandidate
+	else:
+		sanity check <- there's the rub, this will depend on pathCandidate too won't it?
+		update top of pathCandidate and push another tuple on
+-sanity check must check:
+	-how many items in pathCandidate are already solved, if this item is solved
+	-must make sure new item is not already in list (premature loop)
+-quad condition check must check:
+	-if from end of pathCandidate we can reach beginning
+	-if there are 2 solved items in path
+
+********************************************************************************
 03/12/2016
 Learned from Alpha
 -so this is a graph search
@@ -27,7 +52,6 @@ NEW ALGORITHM
 			-use DFS_lim_4_subroutine to get a quad w/properties:
 				-at least two items are "positioned" or "fully explored"
 				-starts at this element
-				-QUAD IS STORED AS 4 JOINTS, NOT 4 BEAMS
 			-given valid quad:
 				-do circle solve to position each of the unsolved beams
 				-mark each as "positioned"
