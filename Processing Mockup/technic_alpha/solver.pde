@@ -197,12 +197,6 @@ class Solver {
   }
 }
 
-float quadratic(float a, float b, float c, boolean pos) {
-  float plusMinus = -1.0;
-  if (pos) plusMinus = 1.0;
-  return (-b + plusMinus * sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
-}
-
 Vec2 circleIntersect(float p0_x, float p0_y, float r0, float p1_x, float p1_y, float r1, float curr_x, float curr_y) {
   // http://paulbourke.net/geometry/circlesphere/
   // distance d between circle centers
@@ -230,42 +224,17 @@ Vec2 circleIntersect(float p0_x, float p0_y, float r0, float p1_x, float p1_y, f
   float dist_2_x = p3_2x - curr_x;
   float dist_2_y = p3_2y - curr_y;  
   
-   println("got positions: " + p3_1x + " " + p3_1y + " and " + p3_2x + " " + p3_2y);
-   println("comparing to: " + curr_x + " " + curr_y);
-   println();  
+   //println("got positions: " + p3_1x + " " + p3_1y + " and " + p3_2x + " " + p3_2y);
+   //println("comparing to: " + curr_x + " " + curr_y);
+   //println();  
   
-   stroke(255, 0, 255);
-   ellipse(curr_x, curr_y, 4, 4);
+   //stroke(255, 0, 255);
+   //ellipse(curr_x, curr_y, 4, 4);
   
    if (dist_2_x * dist_2_x + dist_2_y * dist_2_y > dist_1_x * dist_1_x + dist_1_y * dist_1_y) {
     return new Vec2(p3_1x, p3_1y);
   }
   else return new Vec2(p3_2x, p3_2y);
-  
-  /* derived straight from the formulas. seems to have numerical error problems
-  float z1 = (r1 * r1 - r2 * r2) - (x1 * x1 - x2 * x2) - (y1 * y1 - y2 * y2);
-  float z2 = -2.0 * (y1 - y2);
-  float z3 = 2.0 * (x1 - x2);
-  float a = z2 * z2 + z3 * z3;
-  float b = -2.0 * x1 * z2 * z2 + 2.0 * z1 * z3 - 2.0 * z2 * z3 * y1;
-  float c = z2 * z2 * x1 * x1 + z1 * z1 - 2.0 * z1 * z2 * y1 + y1 * y1 - r1 * r1;
-  
-  float x_solve_1 = quadratic(a, b, c, true);
-  float y_solve_1 = (z1 + z3 * x_solve_1) / z2;
-  
-  float x_solve_2 = quadratic(a, b, c, false);
-  float y_solve_2 = (z1 + z3 * x_solve_2) / z2;
-  
-  float dist_1_x = x_solve_1 - curr_x;
-  float dist_1_y = y_solve_1 - curr_y;
-  
-  float dist_2_x = x_solve_2 - curr_x;
-  float dist_2_y = y_solve_2 - curr_y;
-  
-  if (dist_2_x * dist_2_x + dist_2_y * dist_2_y < dist_1_x * dist_1_x + dist_1_y * dist_1_y) {
-    return new Vec2(x_solve_2, y_solve_2);
-  }
-  else return new Vec2(x_solve_1, y_solve_1); */
 }
 
 float angleToPosition(float x, float y) {

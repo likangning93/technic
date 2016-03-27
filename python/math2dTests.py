@@ -1,4 +1,5 @@
-from vec2 import vec2
+import math2d
+from math2d import vec2
 
 """ unit tests """
 

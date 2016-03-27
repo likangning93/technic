@@ -1,17 +1,22 @@
 import pygame
 import sys
-#import technicSolver
+import technicSolver
 
 # help from https://www.cs.ucsb.edu/~pconrad/cs5nm/topics/pygame/drawing/
 
+def drawBeam(beam):
+	pos = beam.position
+	end = beam.getPosAlongBeam(beam.length)
+	pygame.draw.lines(screen, black, False, [(pos.x,pos.y), (end.x,end.y)], 1)
+
 pygame.init()
 clock = pygame.time.Clock() # for maintaining constant update time
-screen = pygame.display.set_mode((800,600)) # open a window
+screen = pygame.display.set_mode((640,480)) # open a window
 
 bg_color = (255, 255, 255)
 black = (0,0,0)
 
-pos = 100
+solver = technicSolver.generateDefaultLinkage()
 
 # main drawing loop
 while True:
@@ -24,8 +29,9 @@ while True:
 	screen.fill(bg_color)
 
 	# draw things, advance simulation
-	pygame.draw.lines(screen, black, False, [(pos,100), (150,200), (200,100)], 1)
-	pos += 1
+	for beam in solver.beams:
+		drawBeam(beam)
 
+	# update the screen
 	msElapsed = clock.tick(60) # force to 60 fps
 	pygame.display.update() # analagous to swap buffers
