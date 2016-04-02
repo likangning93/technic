@@ -102,12 +102,18 @@ class Beam(object):
 		pathCandidate = [[self, self.listLinkedBeams(None)]]
 		while len(pathCandidate) > 0:
 			beam_beams = pathCandidate[-1] # peek
+			#print("looking at " + str(beam_beams[0]) + " . path so far is length " + str(len(pathCandidate)))
 
 			# bottomed out. check for valid condition
-			if len(pathCandidate) == 4:
-				if beam_beams[0] == self:
-					yield [pair[0] for pair in pathCandidate]
+			if len(pathCandidate) == 5:
+				#print("bottomed out")
 				pathCandidate.pop()
+				#beam_beams[0].position = vec2()
+				#print(str(beam_beams[0]))
+				#print(str(self))
+				if beam_beams[0] is self:
+					#print("success!")
+					yield [pair[0] for pair in pathCandidate]
 				continue
 
 			# exhausted this node
@@ -117,10 +123,7 @@ class Beam(object):
 
 			# go deeper
 			next_beam = beam_beams[1].pop()
-			if len(pathCandidate) == 3:
-				pathCandidate.append([next_beam, None])
-			else:
-				pathCandidate.append([next_beam, next_beam.listLinkedBeams(beam_beams[0])])
+			pathCandidate.append([next_beam, next_beam.listLinkedBeams(beam_beams[0])])
 
 
 class Joint(object):
