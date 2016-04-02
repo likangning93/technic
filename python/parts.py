@@ -3,15 +3,16 @@ import math2d
 from math2d import vec2
 
 class Beam(object):
-	def __init__(self):
+	def __init__(self, int_ID):
+		self.id = int_ID
 		self.joints = []
-		self.position = vec2()
+		self.position = vec2() # do NOT directly modify this except on init!
 		self.rotation = 0.0
 		self.length = 0.0
 		self.timestamp = 0
 
 	def __str__(self):
-		return "beam from: " + str(self.position) + " to " + str(self.getPosAlongBeam(self.length)) 
+		return "beam ID " + str(self.id)
 
 
 	def getPosAlongBeam(self, posAlongBeam):
@@ -35,6 +36,12 @@ class Beam(object):
 		# u is the parametric distance to the nearest point on the line
 		u = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / self.length * self.length;
 		return u # unclamped, so we know what's going on
+
+	def updateAllJoints(self, timestamp):
+		""" update positions and timestamps of all linked beams """
+		for joint in self.joints:
+			joint.timestamp = timestamp
+			joint.position = joint.positionRelative(self)
 
 
 	def joinWithBeam(self, posHere, otherBeam, otherPos):
@@ -125,6 +132,19 @@ class Beam(object):
 			next_beam = beam_beams[1].pop()
 			pathCandidate.append([next_beam, next_beam.listLinkedBeams(beam_beams[0])])
 
+	def distBetweenJoints(self, j1, j2):
+		""" get the linear distance along this beam between the two joints given """
+		if j1 not in self.joints:
+			return None
+		if j2 not in self.joints:
+			return None
+		return abs(j1.getDistanceAlongBeam(self) = j2.getDistanceAlongBeam(self))
+
+	def snapToJoint(self, joint):
+		""" given a joint along this beam, position the beam according to the joint """
+		# get direction from joint to end of beam
+		directionToEnd = -math2d.vectorAlongDirection(self.direction)
+		self.position = joint.position + directionToEnd * joint.getDistanceAlongBeam(self)
 
 class Joint(object):
 
@@ -153,4 +173,9 @@ class Joint(object):
 	def getOtherbeam(self, beam1):
 		if self.beam1 is beam1: return self.beam2
 		if self.beam2 is beam1: return self.beam1
+		return None
+
+	def getDistanceAlongBeam(self, beam):
+		if self.beam1 is beam: return self.beam1_pos
+		if self.beam2 is beam: return self.beam2_pos
 		return None

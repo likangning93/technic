@@ -142,3 +142,7 @@ def angleToOrientation(dir):
 	angle = math.acos(norm)
 	if dir.y < 0: return angle
 	else: return -angle
+
+def vectorAlongDirection(angle):
+	# return the vector direction matching the given angle relative to horizontal
+	return vec2(math.cos(angle), math.sin(angle))
