@@ -1,7 +1,6 @@
 import math
 import math2d
 from math2d import vec2
-import joint
 
 class Beam(object):
 	def __init__(self):
@@ -10,6 +9,10 @@ class Beam(object):
 		self.rotation = 0.0
 		self.length = 0.0
 		self.timestamp = 0
+
+	def __str__(self):
+		return "beam from: " + str(self.position) + " to " + str(self.getPosAlongBeam(self.length)) 
+
 
 	def getPosAlongBeam(self, posAlongBeam):
 		# given a 1D position along a beam, compute the 2D world space position
@@ -96,7 +99,7 @@ class Beam(object):
 		Yield all quad paths leading back to this beam.
 		pathCandidate -> stack of beam objects and linked beams, starting with this
 		"""
-		pathCandidate = [[self, self.listLinkedBeams()]]
+		pathCandidate = [[self, self.listLinkedBeams(None)]]
 		while len(pathCandidate) > 0:
 			beam_beams = pathCandidate[-1] # peek
 
@@ -118,3 +121,33 @@ class Beam(object):
 				pathCandidate.append([next_beam, None])
 			else:
 				pathCandidate.append([next_beam, next_beam.listLinkedBeams(beam_beams[0])])
+
+
+class Joint(object):
+
+	def __init__(self):
+		self.position = vec2()
+		self.timestamp = 0
+		self.beam1 = None
+		self.beam2 = None
+		self.beam1_pos = -1.0
+		self.beam2_pos = -2.0
+		self.isDriver = False
+		self.preferredAngle = 0.0
+
+	def positionRelative(self, beam):
+		""" get the position of this joint along an input beam """
+		if self.beam1_pos is not beam and self.beam2_pos is not beam:
+			return None
+		alongBeam = 0.0;
+		if beam == self.beam1: alongBeam = self.beam1_pos
+		if beam == self.beam2: alongBeam = self.beam2_pos
+		return beam.getPosAlongBeam(alongBeam)
+
+	def getCurrentAngle(self):
+		return beam1.rotation - beam2.rotation
+
+	def getOtherbeam(self, beam1):
+		if self.beam1 is beam1: return self.beam2
+		if self.beam2 is beam1: return self.beam1
+		return None

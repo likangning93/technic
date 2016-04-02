@@ -2,8 +2,7 @@ import math
 import math2d
 from math2d import vec2
 
-import beam
-import joint
+from parts import Beam, Joint
 
 class Solver(object):
 	def __init__(self):
@@ -40,8 +39,6 @@ class Solver(object):
 				continue
 			return quad
 		return None
-
-
 
 def generateDefaultLinkage():
 	""" generates a solver with a basic linkage """
