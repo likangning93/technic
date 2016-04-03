@@ -32,7 +32,7 @@ class vec2(object):
 
 
 	def __radd__(self, other):
-		return other + self
+		return vec2(self.x + other.x, self.y + other.y)
 
 
 	def __iadd__(self, other):

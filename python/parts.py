@@ -138,13 +138,13 @@ class Beam(object):
 			return None
 		if j2 not in self.joints:
 			return None
-		return abs(j1.getDistanceAlongBeam(self) = j2.getDistanceAlongBeam(self))
+		return abs(j1.getDistanceAlongBeam(self) - j2.getDistanceAlongBeam(self))
 
 	def snapToJoint(self, joint):
 		""" given a joint along this beam, position the beam according to the joint """
 		# get direction from joint to end of beam
-		directionToEnd = -math2d.vectorAlongDirection(self.direction)
-		self.position = joint.position + directionToEnd * joint.getDistanceAlongBeam(self)
+		directionToEnd = -math2d.vectorAlongDirection(self.rotation)
+		self.position = joint.position + (directionToEnd * joint.getDistanceAlongBeam(self))
 
 class Joint(object):
 
@@ -160,7 +160,7 @@ class Joint(object):
 
 	def positionRelative(self, beam):
 		""" get the position of this joint along an input beam """
-		if self.beam1_pos is not beam and self.beam2_pos is not beam:
+		if self.beam1 is not beam and self.beam2 is not beam:
 			return None
 		alongBeam = 0.0;
 		if beam == self.beam1: alongBeam = self.beam1_pos

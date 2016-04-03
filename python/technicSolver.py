@@ -28,7 +28,7 @@ class Solver(object):
 			beam = beams.pop()
 			if beam.timestamp == timestamp:
 				continue
-			beam.solveQuad(beam)
+			self.solveQuad(beam, timestamp)
 			beams = beams + beam.listLinkedBeams(None)
 
 	def solveQuad(self, beam, timestamp):
@@ -48,7 +48,7 @@ class Solver(object):
 		"""
 
 		# get quad
-		quad = quadCheck(beam, timestamp)
+		quad = self.quadCheck(beam, timestamp)
 		if quad == None:
 			return
 
@@ -98,7 +98,8 @@ class Solver(object):
 			for beam in quad:
 				if beam.timestamp == timestamp:
 					solved.append(beam)
-				else unsolved.append(beam)
+				else:
+					unsolved.append(beam)
 			sj1 = solved[0].getSharedJoint(unsolved[1])
 			sj3 = solved[1].getSharedJoint(unsolved[0])
 			sj1.position = sj1.positionRelative(solved[0])
@@ -190,6 +191,7 @@ def generateDefaultLinkage():
 	solver.joints.append(link23)
 	solver.joints.append(link34)
 	solver.joints.append(link41)
+
 	return solver
 
 
