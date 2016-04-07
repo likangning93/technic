@@ -12,7 +12,10 @@ class Beam(object):
 		self.timestamp = 0
 
 	def __str__(self):
-		return "beam ID " + str(self.id)
+		jointString = ""
+		for joint in self.joints:
+			jointString += str(joint) + " "
+		return "beam ID " + str(self.id) + " joints: " + jointString
 
 
 	def getPosAlongBeam(self, posAlongBeam):

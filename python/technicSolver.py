@@ -14,24 +14,34 @@ class Solver(object):
 		# orient any preferred joints on the root
 		# this "solves" any attached beams
 		self.root.updateAllJoints(timestamp)
+		self.root.timestamp = timestamp
 		for joint in self.root.joints:
 			if joint.isDriver:
 				linkedBeam = joint.getOtherbeam(self.root)
-				linkedBeam.orientation = joint.preferredAngle
+				linkedBeam.rotation = joint.preferredAngle
 				linkedBeam.snapToJoint(joint)
 				linkedBeam.timestamp = timestamp
 
-		# traverse starting at root to solve everything else
-		# use a list of unexplored beams containing only root at first
-		beams = [self.root]
+		# traverse from whatever's linked to root to solve everything else
+		beams = self.root.listLinkedBeams(None)
 		while len(beams) > 0:
 			beam = beams.pop()
 			if beam.timestamp == timestamp:
 				continue
 			self.solveQuad(beam, timestamp)
-			beams = beams + beam.listLinkedBeams(None)
+			# get linked beams
+			# add only the unsolved ones
+			linkedBeams = beam.listLinkedBeams(None)
+			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp < timestamp and not nbeam in beams]
+			beams = beams + unsolvedBeams
+			print(str(len(beams)))
 
 	def solveQuad(self, beam, timestamp):
+		# TODO: rotation about the appropriate joint isn't working right now
+		# how to handle this?
+		# likely that we need an "orient relative to" function
+
+
 		"""
 		A "Quad" has two solved beams. Determine the case and solve the remainder.
 		Quad should be made up of a loop already
@@ -48,11 +58,19 @@ class Solver(object):
 		"""
 
 		# get quad
+		print("getting quad")
 		quad = self.quadCheck(beam, timestamp)
+		print("quad is")
+		for beam in quad:
+			print(str(beam))
+
+
 		if quad == None:
+			print("no quad")
 			return
 
 		if quad[0].timestamp == quad[2].timestamp: # unconsecutive
+			print("unconsecutive")
 			unsolved1 = quad[0]
 			unsolved3 = quad[2]
 			solved2 = quad[1]
@@ -86,13 +104,13 @@ class Solver(object):
 			unsolved3.updateAllJoints(timestamp)
 		else:
 			"""
-			sj1--s0--sj2
+			sj1--s0--sj2 -> don't care about this one
 			 |        |
 			 u1       s1
 			 |        |
 			uj0--u0--sj3
 			"""
-
+			print("v")
 			unsolved = []
 			solved = []
 			for beam in quad:
@@ -100,18 +118,31 @@ class Solver(object):
 					solved.append(beam)
 				else:
 					unsolved.append(beam)
+
+			if not solved[0].getSharedJoint(unsolved[1]):
+				# shuffle so order matches diagram
+				tmp = solved[1]
+				solved[1] = solved[0]
+				solved[0] = tmp
+
+			print("solved and unsolved:")
+			for beam in solved:
+				print(str(beam))
+			for beam in unsolved:
+				print(str(beam))
+
 			sj1 = solved[0].getSharedJoint(unsolved[1])
 			sj3 = solved[1].getSharedJoint(unsolved[0])
 			sj1.position = sj1.positionRelative(solved[0])
 			sj3.position = sj3.positionRelative(solved[1])
 
 			# position one end
-			unsolved[0].snapToJoint(sj3.position)
-			unsolved[1].snapToJoint(sj1.position)
+			unsolved[0].snapToJoint(sj3)
+			unsolved[1].snapToJoint(sj1)
 
 			# get position of shared joint
 			uj0 = unsolved[0].getSharedJoint(unsolved[1])
-			uj0.position = math2d.circleInstersect(
+			uj0.position = math2d.circleIntersect(
 				sj1.position, \
 				sj3.position, \
 				unsolved[0].distBetweenJoints(sj3, uj0), \
@@ -123,6 +154,8 @@ class Solver(object):
 			unsolved[1].orientation = math2d.angleToOrientation(uj0.position - sj1.position)
 
 			# update all timestamps
+			unsolved[0].timestamp = timestamp
+			unsolved[1].timestamp = timestamp			
 			unsolved[0].updateAllJoints(timestamp)
 			unsolved[1].updateAllJoints(timestamp)
 
@@ -146,8 +179,10 @@ class Solver(object):
 		for quad in beam1.yieldQuad():
 			# check if quad contains two beams with up-to-date timesteps
 			upToDates = 0
+			#print("checking quad")
 			for beam in quad:
-				if beam.timestamp  == timestamp:
+				#print(str(beam.timestamp) + " " + str(timestamp))
+				if beam.timestamp == timestamp:
 					upToDates += 1
 			if upToDates != 2:
 				continue
@@ -164,8 +199,10 @@ def generateDefaultLinkage():
 
 	secondBeam = Beam(2)
 	secondBeam.length = 20.0
+	secondBeam.position = vec2(240.0, 240.0)
 	link12 = rootBeam.joinWithBeam(40.0, secondBeam, 0.0)
 	link12.isDriver = True
+	link12.preferredAngle = 1.0
 
 	thirdBeam = Beam(3)
 	thirdBeam.length = 60.0

@@ -31,10 +31,6 @@ class vec2(object):
 		return vec2(self.x + other.x, self.y + other.y)
 
 
-	def __radd__(self, other):
-		return vec2(self.x + other.x, self.y + other.y)
-
-
 	def __iadd__(self, other):
 		self.x += other.x
 		self.y += other.y
@@ -43,10 +39,6 @@ class vec2(object):
 
 	def __sub__(self, other):
 		return vec2(self.x - other.x, self.y - other.y)
-
-
-	def __rsub__(self, other):
-		return other - self
 
 
 	def __isub__(self, other):
@@ -82,7 +74,7 @@ class vec2(object):
 
 
 	def length(self):
-		return sqrt(self.x * self.x + self.y * self.y)
+		return math.sqrt(self.x * self.x + self.y * self.y)
 
 
 	def rotate(self, theta):
@@ -101,19 +93,30 @@ def dot(a, b):
 	""" dot product of two vec2s"""
 	return a.x * b.x + a.y * b.y
 
+def angleToOrientation(dir):
+	# return the angle relative to horizontal needed to achieve the given vector dir
+	norm = dir.norm()
+	angle = math.acos(norm.x)
+	if dir.y < 0: return -angle
+	else: return angle
+
+def vectorAlongDirection(angle):
+	# return the vector direction matching the given angle relative to horizontal
+	return vec2(math.cos(angle), math.sin(angle))
+
 """ circle intersection method """
-def circleIntersect(p0, r0, p1, r1, currPos):
+def circleIntersect(p0, p1, r0, r1, currPos):
 	""" returns nearest point in circle-circle intersection to currPos """
 	# http://paulbourke.net/geometry/circlesphere/
 	# distance d between circle centers
 	d_x = p0.x - p1.x;
 	d_y = p0.y - p1.y;
-	d = sqrt(d_x * d_x + d_y * d_y)
+	d = math.sqrt(d_x * d_x + d_y * d_y)
 	if d > (r0 + r1): return None # no intersection; circles are too far apart
 	if d < abs(r0 - r1): return None # no intersection; circle contains other
 
 	a = (r0 * r0 - r1 * r1 + d * d) / (2.0 * d)
-	h = sqrt(r0 * r0 - a * a)
+	h = math.sqrt(r0 * r0 - a * a)
 	p2_x = p0_x + a * (p1_x - p0_x) / d
 	p2_y = p0_y + a * (p1_y - p0_y) / d
 
@@ -134,15 +137,4 @@ def circleIntersect(p0, r0, p1, r1, currPos):
 	if (dist_2_x * dist_2_x + dist_2_y * dist_2_y) > (dist_1_x * dist_1_x + dist_1_y * dist_1_y):
 		return vec2(p3_1x, p3_1y)
 	else:
-		return vec2(p3_2x, p3_2y)
-
-def angleToOrientation(dir):
-	# return the angle relative to horizontal needed to achieve the given vector dir
-	norm = dir.norm()
-	angle = math.acos(norm)
-	if dir.y < 0: return angle
-	else: return -angle
-
-def vectorAlongDirection(angle):
-	# return the vector direction matching the given angle relative to horizontal
-	return vec2(math.cos(angle), math.sin(angle))
+		return vec2(p3_2x, p3_2y)	
