@@ -25,9 +25,15 @@ def drawJoint(joint):
 	pygame.draw.circle(screen, red, (int(pos.x), int(pos.y)), 5, 2)
 
 solver = technicSolver.generateDefaultLinkage()
+driverJoint = None
+for joint in solver.joints:
+	if joint.isDriver:
+		driverJoint = joint
+		break
+
 
 time = 1
-
+print
 # main drawing loop
 while True:
 	# handle events
@@ -47,6 +53,10 @@ while True:
 
 	for joint in solver.joints:
 		drawJoint(joint)
+
+	# update linkage driver
+	driverJoint.preferredAngle += 0.1
+
 
 	# update the screen
 	msElapsed = clock.tick(60) # force to 60 fps

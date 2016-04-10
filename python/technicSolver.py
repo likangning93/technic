@@ -19,6 +19,7 @@ class Solver(object):
 			if joint.isDriver:
 				linkedBeam = joint.getOtherbeam(self.root)
 				linkedBeam.rotation = joint.preferredAngle
+				#print("t = " + str(timestamp) + " angle is " + str(linkedBeam.rotation))
 				linkedBeam.snapToJoint(joint)
 				linkedBeam.timestamp = timestamp
 
@@ -34,7 +35,7 @@ class Solver(object):
 			linkedBeams = beam.listLinkedBeams(None)
 			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp < timestamp and not nbeam in beams]
 			beams = beams + unsolvedBeams
-			print(str(len(beams)))
+			#print(str(len(beams)))
 
 	def solveQuad(self, beam, timestamp):
 		# TODO: rotation about the appropriate joint isn't working right now
@@ -58,16 +59,14 @@ class Solver(object):
 		"""
 
 		# get quad
-		print("getting quad")
+		#print("getting quad")
 		quad = self.quadCheck(beam, timestamp)
-		print("quad is")
-		for beam in quad:
-			print(str(beam))
-
-
-		if quad == None:
-			print("no quad")
-			return
+		#print("quad is")
+		#for beam in quad:
+		#	print(str(beam))
+		#if quad == None:
+		#	print("no quad")
+		#	return
 
 		if quad[0].timestamp == quad[2].timestamp: # unconsecutive
 			print("unconsecutive")
@@ -110,7 +109,7 @@ class Solver(object):
 			 |        |
 			uj0--u0--sj3
 			"""
-			print("v")
+			#print("v")
 			unsolved = []
 			solved = []
 			for beam in quad:
@@ -125,39 +124,43 @@ class Solver(object):
 				solved[1] = solved[0]
 				solved[0] = tmp
 
-			print("solved and unsolved:")
-			for beam in solved:
-				print(str(beam))
-			for beam in unsolved:
-				print(str(beam))
+			#print("solved and unsolved:")
+			#for beam in solved:
+			#	print(str(beam))
+			#for beam in unsolved:
+			#	print(str(beam))
 
 			sj1 = solved[0].getSharedJoint(unsolved[1])
 			sj3 = solved[1].getSharedJoint(unsolved[0])
 			sj1.position = sj1.positionRelative(solved[0])
 			sj3.position = sj3.positionRelative(solved[1])
 
-			# position one end
-			unsolved[0].snapToJoint(sj3)
-			unsolved[1].snapToJoint(sj1)
+			## position one end
+			#unsolved[0].snapToJoint(sj3)
+			#unsolved[1].snapToJoint(sj1)
 
 			# get position of shared joint
 			uj0 = unsolved[0].getSharedJoint(unsolved[1])
 			uj0.position = math2d.circleIntersect(
 				sj1.position, \
 				sj3.position, \
-				unsolved[0].distBetweenJoints(sj3, uj0), \
 				unsolved[1].distBetweenJoints(sj1, uj0), \
+				unsolved[0].distBetweenJoints(sj3, uj0), \
 				uj0.position)
 
-			# update orientations
-			unsolved[0].orientation = math2d.angleToOrientation(uj0.position - sj3.position)
-			unsolved[1].orientation = math2d.angleToOrientation(uj0.position - sj1.position)
+			## update orientations
+			#unsolved[0].orientation = math2d.angleToOrientation(uj0.position - sj3.position)
+			#unsolved[1].orientation = math2d.angleToOrientation(uj0.position - sj1.position)
+
+			# update positions and orientations
+			unsolved[0].snapToJoints(sj3, uj0)
+			unsolved[1].snapToJoints(sj1, uj0)
 
 			# update all timestamps
 			unsolved[0].timestamp = timestamp
 			unsolved[1].timestamp = timestamp			
-			unsolved[0].updateAllJoints(timestamp)
-			unsolved[1].updateAllJoints(timestamp)
+			#unsolved[0].updateAllJoints(timestamp)
+			#unsolved[1].updateAllJoints(timestamp)
 
 
 	def quadCheck(self, beam1, timestamp):

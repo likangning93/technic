@@ -1,6 +1,6 @@
 4/10/2016 Notes
 TODO
--get the quad solver working!
+-get the quad solver simple case working! [done!]
 -get started on the GUI
 
 4/8/2016 Notes
