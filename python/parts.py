@@ -19,7 +19,7 @@ class Beam(object):
 
 
 	def getPosAlongBeam(self, posAlongBeam):
-		# given a 1D position along a beam, compute the 2D world space position
+		""" given a 1D position along a beam, compute the 2D world space position """
 		if posAlongBeam > self.length or posAlongBeam < 0.0:
 			print("error! position length " + str(posAlongBeam) + " is out of bounds!")
 			print("this beam's length is " + str(self.length))
@@ -27,7 +27,11 @@ class Beam(object):
 		return zero_deg.rotate(self.rotation) + self.position
 
 	def getNearestPosAlongBeam(self, worldPos):
-		""" http://paulbourke.net/geometry/pointlineplane/ """
+		"""
+		Given a world position, return the parametric position along the line to
+		the nearest point along the line. Based on mathematics here:
+		http://paulbourke.net/geometry/pointlineplane/
+		"""
 		# algorithm assumes line defined by two points
 		x1 = self.position.x
 		y1 = self.position.y
@@ -36,9 +40,29 @@ class Beam(object):
 		y2 = p2.y
 		x3 = worldPos.x
 		y3 = worldPos.y
-		# u is the parametric distance to the nearest point on the line
-		u = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / self.length * self.length;
+		# u is the parametric distance of the nearest point on the line
+		u = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / (self.length * self.length);
 		return u # unclamped, so we know what's going on
+
+	def onBeam(self, worldPos, dist):
+		"""
+		Given a world position and an epsilon dist, check if the world
+		position qualifies as being "on the line." If so, return the parametric
+		position of the closest point to worldPos along the line.
+		"""
+		t = self.getNearestPosAlongBeam(worldPos)
+		if t < 0.0:
+			if (worldPos - self.pos).length() < dist: return 0.0
+			else: return None
+		if t > 1.0:
+			endPos = self.getPosAlongBeam(self.length)
+			if (worldPos - endPos).length() < dist: return 1.0
+			else: return None
+		# get the position
+		nearestPos = self.getPosAlongBeam(t * self.length)
+		if (worldPos - nearestPos).length() < dist: return t
+		else: return None
+
 
 	def updateAllJoints(self, timestamp):
 		""" update positions and timestamps of all linked beams """
@@ -94,12 +118,6 @@ class Beam(object):
 				if joint1 is joint2: return joint1
 		return None
 
-	def getSolverJoint(self, timestamp):
-		for joint in self.joints:
-			if joint.timestamp == timestamp:
-				return joint
-		return None
-
 	def listLinkedBeams(self, other):
 		""" returns a list of beams linked to this beam, excluding other """
 		return [joint.getOtherbeam(self) for joint in self.joints if joint.getOtherbeam(self) is not other]
@@ -149,6 +167,29 @@ class Beam(object):
 		directionToEnd = -math2d.vectorAlongDirection(self.rotation)
 		self.position = joint.position + (directionToEnd * joint.getDistanceAlongBeam(self))
 
+	def snapToJoints(self, joint1, joint2):
+		""" 
+		Given two positioned joints along this beam, orient the beam.
+		Joint closer to end will be given priority - if we can't match
+		other joint, we'll just point at it.
+		"""
+		# figure out which joint to snap to
+		nearJoint = joint1
+		farJoint = joint2
+		if joint1.getDistanceAlongBeam(self) > joint2.getDistanceAlongBeam(self):
+			nearJoint = joint2
+			farJoint = joint1
+
+		# get orientation from nearJoint to farJoint
+		direction = farJoint.position - nearJoint.position
+		rotation = math2d.angleToOrientation(direction)
+
+		# orient the beam
+		self.rotation = rotation
+
+		# snap it to the nearJoint
+		self.snapToJoint(nearJoint)
+
 class Joint(object):
 
 	def __init__(self):
@@ -160,6 +201,9 @@ class Joint(object):
 		self.beam2_pos = -2.0
 		self.isDriver = False
 		self.preferredAngle = 0.0
+
+		# debug
+		self.color = (255, 0, 0)
 
 	def positionRelative(self, beam):
 		""" get the position of this joint along an input beam """
@@ -181,4 +225,7 @@ class Joint(object):
 	def getDistanceAlongBeam(self, beam):
 		if self.beam1 is beam: return self.beam1_pos
 		if self.beam2 is beam: return self.beam2_pos
-		return None
+		return None 
+
+	def positionOnJoint(self, position, dist):
+		return (self.position - position).length() < dist

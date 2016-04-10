@@ -1,0 +1,29 @@
+4/8/2016 Notes
+TODO
+-interaction methods to add for beams:
+	-should be able to position it by any joint
+	-should be able to rotate it about that joint
+	-hmmm... but how to do this elegantly?
+	-still possible that there are two cases: point at and point away
+	-we should do orientation by two joints, b/c everything else "solves" after those to joints are in place.
+-add a beam interaction testing UI
+
+4/7/2016 Notes
+TODO
+-write unit tests for all math2d functions -> looks like radd and rsub aren't really needed [done enough]
+-write the snap and orient method for beams. write a graphical test for this with mouse interaction
+-test quad solver
+
+Thoughts
+-should we... restructure everything to be like a 2D skeleton?
+-and specify where things have to be joined?
+-or can we auto-build a 2D skeleton from a set of joints?
+-it's hard to tell without a UI
+-but I think my existing solution is actually more flexible
+
+4/4/2016 Notes
+10:02 PM
+-solver currently breaks on line 118 in solve quad because getCommonJoint is returning None
+-thought: when solving a beam, need to reposition it relative to a joint
+	-this applies to orientation as well as position!
+	-TODO: implement and test
