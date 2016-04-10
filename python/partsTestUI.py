@@ -14,6 +14,7 @@ screen = pygame.display.set_mode((640,480)) # open a window
 bg_color = (255, 255, 255)
 black = (0,0,0)
 red = (255, 0, 0)
+blue = (0, 0, 255)
 teal = (0, 255, 255)
 
 def drawBeam(beam):
@@ -63,15 +64,29 @@ class beamTestState(object):
 		if self.state_mode_dragJoint == True:
 			# check if any joint has been clicked. update selection if so
 			for joint in self.testBeam.joints:
-				print("checking joint " + str(joint))
-				print(str(joint.position) + " " + str(mousePos_vec2))
-				if joint.positionOnJoint(mousePos_vec2, 5.0):
-					print("YUS")
-
+				if joint.positionOnJoint(mousePos_vec2, 5.0) and joint is not self.state_mobileJoint:
+					self.state_staticJoint = self.state_mobileJoint
+					self.state_mobileJoint = joint
+					break
+			for joint in self.testBeam.joints:
+				# handle fixing up colors
+				joint.color = red
+				if joint is self.state_staticJoint:
+					joint.color = blue
+				elif joint is self.state_mobileJoint:
+					joint.color = teal
 
 
 	def mouseDragHandler(self, mousePos):
-		pass
+		mousePos_vec2 = vec2(mousePos[0], mousePos[1])
+		if self.state_mode_dragJoint:
+			if self.state_mobileJoint and not self.state_mobileJoint.positionOnJoint(mousePos_vec2, 5.0):
+				self.state_mobileJoint.position = mousePos_vec2
+				if self.state_staticJoint:
+					self.testBeam.snapToJoints(self.state_staticJoint, self.state_mobileJoint)
+				else:
+					self.testBeam.snapToJoint(self.state_mobileJoint)
+				self.testBeam.updateAllJoints(0)
 
 	def keyPressHandler(self, key):
 		#print(key)
@@ -91,10 +106,20 @@ class beamTestState(object):
 			print(self.testBeam.position)
 			endPos = self.testBeam.getPosAlongBeam(self.testBeam.length)
 			print(endPos)
+			print("static joint: " + str(self.state_staticJoint))
+			print("mobile joint: " + str(self.state_mobileJoint))
+
 		if key == 'c': # clear selection
 			print("requested to clear selection info")
 			self.state_staticJoint = None
 			self.state_mobileJoint = None
+			for joint in self.testBeam.joints:
+				# handle fixing up colors
+				joint.color = red
+				if joint is self.state_staticJoint:
+					joint.color = blue
+				elif joint is self.state_mobileJoint:
+					joint.color = teal			
 
 test = beamTestState()
 

@@ -170,10 +170,9 @@ class Beam(object):
 	def snapToJoints(self, joint1, joint2):
 		""" 
 		Given two positioned joints along this beam, orient the beam.
-		Joint closer to end will be given priority - if we can't match
-		other joint, we'll just point at it.
+		Prioritize joint1
 		"""
-		# figure out which joint to snap to
+		# figure out how to point
 		nearJoint = joint1
 		farJoint = joint2
 		if joint1.getDistanceAlongBeam(self) > joint2.getDistanceAlongBeam(self):
@@ -188,7 +187,7 @@ class Beam(object):
 		self.rotation = rotation
 
 		# snap it to the nearJoint
-		self.snapToJoint(nearJoint)
+		self.snapToJoint(joint1)
 
 class Joint(object):
 
