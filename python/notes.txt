@@ -1,3 +1,8 @@
+4/10/2016 Notes
+TODO
+-get the quad solver working!
+-get started on the GUI
+
 4/8/2016 Notes
 TODO
 -interaction methods to add for beams:
@@ -6,7 +11,7 @@ TODO
 	-hmmm... but how to do this elegantly?
 	-still possible that there are two cases: point at and point away
 	-we should do orientation by two joints, b/c everything else "solves" after those to joints are in place.
--add a beam interaction testing UI
+-add a beam interaction testing UI [done]
 
 4/7/2016 Notes
 TODO

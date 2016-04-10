@@ -27,10 +27,8 @@ def drawBeam(beam):
 	for joint in beam.joints:
 		pos = joint.positionRelative(beam)
 		pygame.draw.circle(screen, joint.color, (int(pos.x), int(pos.y)), 6, 1)
+		pygame.draw.circle(screen, joint.color, (int(pos.x), int(pos.y)), 2, 1)
 
-def drawJoint(joint):
-	pos = joint.position
-	pygame.draw.circle(screen, joint.color, (int(pos.x), int(pos.y)), 5, 2)
 
 class beamTestState(object):
 	def __init__(self):
@@ -146,9 +144,6 @@ while True:
 
 	# draw things, advance simulation
 	drawBeam(test.testBeam)
-
-	for joint in test.testBeam.joints:
-		drawJoint(joint)
 
 	# update the screen
 	msElapsed = clock.tick(60) # force to 60 fps
