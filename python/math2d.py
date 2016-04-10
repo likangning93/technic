@@ -117,22 +117,22 @@ def circleIntersect(p0, p1, r0, r1, currPos):
 
 	a = (r0 * r0 - r1 * r1 + d * d) / (2.0 * d)
 	h = math.sqrt(r0 * r0 - a * a)
-	p2_x = p0_x + a * (p1_x - p0_x) / d
-	p2_y = p0_y + a * (p1_y - p0_y) / d
+	p2_x = p0.x + a * (p1.x - p0.x) / d
+	p2_y = p0.y + a * (p1.y - p0.y) / d
 
 	# circle intersect 1
-	p3_1x = p2_x + h * (p1_y - p0_y) / d
-	p3_1y = p2_y - h * (p1_x - p0_x) / d
+	p3_1x = p2_x + h * (p1.y - p0.y) / d
+	p3_1y = p2_y - h * (p1.x - p0.x) / d
 
 	# circle intersect 2
-	p3_2x = p2_x - h * (p1_y - p0_y) / d
-	p3_2y = p2_y + h * (p1_x - p0_x) / d
+	p3_2x = p2_x - h * (p1.y - p0.y) / d
+	p3_2y = p2_y + h * (p1.x - p0.x) / d
 
-	dist_1_x = p3_1x - curr_x
-	dist_1_y = p3_1y - curr_y
+	dist_1_x = p3_1x - currPos.x
+	dist_1_y = p3_1y - currPos.y
 
-	dist_2_x = p3_2x - curr_x
-	dist_2_y = p3_2y - curr_y
+	dist_2_x = p3_2x - currPos.x
+	dist_2_y = p3_2y - currPos.y
 
 	if (dist_2_x * dist_2_x + dist_2_y * dist_2_y) > (dist_1_x * dist_1_x + dist_1_y * dist_1_y):
 		return vec2(p3_1x, p3_1y)

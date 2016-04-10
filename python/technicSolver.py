@@ -216,7 +216,7 @@ def generateDefaultLinkage():
 	fourthBeam.rotation = math.radians(10.0)
 	link34 = fourthBeam.joinWithBeam(35.0, thirdBeam, 60.0)
 
-	link41 = fourthBeam.joinWithBeam(35.0, rootBeam, 100.0)
+	link41 = fourthBeam.joinWithBeam(0.0, rootBeam, 100.0)
 
 	solver.root = rootBeam
 	solver.beams.append(rootBeam)
