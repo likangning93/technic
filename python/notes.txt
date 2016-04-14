@@ -1,3 +1,26 @@
+4/13/2016 Notes
+TODO
+-get editor GUI going
+-need to do:
+	-beam adding mode -> positioning and orientation
+	-joint adding mode
+	-select and reorient/delete mode
+	-beam joining mode I/O + file format
+
+	-keyboard controls for switching modes, advancing state, pause, play
+	-elegant handling if something breaks
+
+-beam adding mode
+	-"draw" free beams in space
+-joint adding mode
+	-"click" intersections of beams to add joints
+-select and delete/edit mode
+	-"click" anything and do stuff to it
+	-should be able to reorient beams about joints like in the beam test UI
+	-should only be able to reorient beams that are linked to only one other
+	-any other beams just get moved around
+
+
 4/10/2016 Notes
 TODO
 -get the quad solver simple case working! [done!]

@@ -6,6 +6,16 @@ from math2d import vec2
 import pygame
 import sys
 
+print("how to use:")
+print("-press 'a' to enter joint add mode.")
+print("-click on the beam to add joints")
+print("-press 's' to enter joint select and manipulate mode")
+print("-beam will be oriented by the last two joints selected")
+print("-beam will prioritize positioning by the least recently selected")
+print("-press 'c' to clear the joint selection")
+print("-press 'p' to dump test beam and sim state information")
+
+
 pygame.init()
 clock = pygame.time.Clock() # for maintaining constant update time
 screen = pygame.display.set_mode((640,480)) # open a window

@@ -70,6 +70,16 @@ class Beam(object):
 			joint.timestamp = timestamp
 			joint.position = joint.positionRelative(self)
 
+	def joinByWorldPos(self, otherBeam, worldPos, dist):
+		"""
+		Join the two beams together if worldPos falls along both.
+		"""
+		posAlongSelf = onBeam(worldPos, dist)
+		posAlongOther = otherbeam.onBeam(worldPos, dist)
+		if not posAlongSelf or not posAlongOther:
+			return
+		return self.joinWithBeam(posAlongSelf, otherbeam, posAlongOther)
+
 
 	def joinWithBeam(self, posHere, otherBeam, otherPos):
 		""" bind two beams together given a length along each
@@ -228,3 +238,9 @@ class Joint(object):
 
 	def positionOnJoint(self, position, dist):
 		return (self.position - position).length() < dist
+
+	def delink(self):
+		if self.beam1:
+			self.beam1.joints.remove(self)
+		if self.beam2:
+			self.beam2.joints.remove(self)
