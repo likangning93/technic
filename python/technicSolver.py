@@ -33,7 +33,7 @@ class Solver(object):
 			# get linked beams
 			# add only the unsolved ones
 			linkedBeams = beam.listLinkedBeams(None)
-			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp < timestamp and not nbeam in beams]
+			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp != timestamp and not nbeam in beams]
 			beams = beams + unsolvedBeams
 			#print(str(len(beams)))
 

@@ -52,7 +52,7 @@ class Beam(object):
 		"""
 		t = self.getNearestPosAlongBeam(worldPos)
 		if t < 0.0:
-			if (worldPos - self.pos).length() < dist: return 0.0
+			if (worldPos - self.position).length() < dist: return 0.0
 			else: return None
 		if t > 1.0:
 			endPos = self.getPosAlongBeam(self.length)
@@ -74,11 +74,17 @@ class Beam(object):
 		"""
 		Join the two beams together if worldPos falls along both.
 		"""
-		posAlongSelf = onBeam(worldPos, dist)
-		posAlongOther = otherbeam.onBeam(worldPos, dist)
+		posAlongSelf = self.onBeam(worldPos, dist)
+		posAlongOther = otherBeam.onBeam(worldPos, dist)
+		#print(str(posAlongSelf) + " " + str(posAlongOther))
 		if not posAlongSelf or not posAlongOther:
-			return
-		return self.joinWithBeam(posAlongSelf, otherbeam, posAlongOther)
+			return None
+
+		posAlongSelf *= self.length
+		posAlongOther *= otherBeam.length
+		newJoint = self.joinWithBeam(posAlongSelf, otherBeam, posAlongOther)
+		newJoint.position = worldPos
+		return newJoint
 
 
 	def joinWithBeam(self, posHere, otherBeam, otherPos):

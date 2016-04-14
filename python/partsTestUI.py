@@ -133,6 +133,9 @@ test = beamTestState()
 
 # main drawing loop
 while True:
+	# clear screen
+	screen.fill(bg_color)
+
 	# handle events
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -149,8 +152,6 @@ while True:
 		if event.type == pygame.KEYDOWN:
 			#print(event)
 			test.keyPressHandler(event.unicode)
-
-	screen.fill(bg_color)
 
 	# draw things, advance simulation
 	drawBeam(test.testBeam)
