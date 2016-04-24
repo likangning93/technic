@@ -1,3 +1,28 @@
+4/24/2016 Notes
+TODO
+-get the file format working!
+	-working with JSON here
+	-this isn't exactly a tree, so best approach will probably be:
+	-come up with names for all the joints and all the beams in the system
+	-list which names go with which
+	-each json dict will need name, and type
+	-joints need:
+		-1x string name
+		-2x beam names, strings
+		-2x positions along beams floats
+		-1x preferred angle float
+		-1x drive boolean
+	-beams need:
+		-1x string name
+		-1x root boolean
+		-1x position
+		-1x length
+		-list of joints
+
+-catch and handle problem configurations
+-do prismatic joints
+-think about how gears should work
+
 4/13/2016 Notes
 TODO
 -get editor GUI going

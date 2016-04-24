@@ -4,6 +4,7 @@ import technicSolver
 from parts import Beam, Joint
 import math2d
 from math2d import vec2
+import linkageImportExport
 
 # help from https://www.cs.ucsb.edu/~pconrad/cs5nm/topics/pygame/drawing/
 
@@ -48,7 +49,7 @@ class solverTestState(object):
 			(int(self.state_mouseLastCoord.x),int(self.state_mouseLastCoord.y))], 1)
 
 
-	def __init__(self):
+	def __init__(self, filename=None):
 		# simulation state members
 		self.state_mode_dragManip = False # activate by pressing d
 		self.state_mode_addBeams = False # activate by pressing b
@@ -65,6 +66,8 @@ class solverTestState(object):
 
 		self.time = 1
 		self.solver = technicSolver.generateDefaultLinkage()
+		if filename is not None:
+			self.solver = linkageImportExport.load(filename)
 		# get the driver joint, we need that.
 		self.driverJoint = None
 		for joint in self.solver.joints:
@@ -209,7 +212,7 @@ class solverTestState(object):
 					self.state_selectedJoint = None
 		pass
 
-test = solverTestState()
+test = solverTestState("test.json")
 
 # main drawing loop
 while True:

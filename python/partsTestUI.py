@@ -5,6 +5,7 @@ from math2d import vec2
 
 import pygame
 import sys
+import linkageImportExport
 
 print("how to use:")
 print("-press 'a' to enter joint add mode.")
