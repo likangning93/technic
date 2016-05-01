@@ -1,6 +1,37 @@
+5/01/2016
+Fix Error Handling
+-"bouncing"
+-take a look at anything that returns a 'None'
+
+Prismatic Joints
+-modified joint
+-beams should just point at each others' "other ends" in the quad solve
+-maybe draw something in between?
+-user interaction: add a "p" control for adding prismatic joints between beams
+
+4/30/2016 Notes
+gear systems
+-so gears should all be parts of gear chains
+	-all gears in one chain must be on the same beam
+	-but this also means they can be attached to a joint between two beams
+	-in which case they need to be rigidly bound to one of the beams of the joint
+	-so it's more like every gear is attached to a beam, but only one is rigidly bound
+
+-gear chains should be driven by a gear linked to a joint in the linkage
+	-all joints have a "angle" parameter, we'll use that to drive the gear
+	-so the preferred angle always needs to be updated -> use timsestamp to tell
+-linking the other way: beams can be attached to gears as well?
+	-this just sets the beam's rotation when encountered
+	-if the joint is already rotated and it doesn't match the goal orientation currently being solved, throw an error
+
+-solving starts with all beams, but if any joints have an attached gear, we branch out and solve the entire gear system, setting preferred angles as we go
+	-so joint needs a link to gear
+
+prismatic joints
+
 4/24/2016 Notes
 TODO
--get the file format working!
+-get the file format working! [done? test?]
 	-working with JSON here
 	-this isn't exactly a tree, so best approach will probably be:
 	-come up with names for all the joints and all the beams in the system
