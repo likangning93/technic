@@ -56,6 +56,8 @@ class solverTestState(object):
 			pos1 = joint.positionRelative(beam)
 			pos2 = joint.positionRelative(joint.getOtherbeam(beam))
 			clr = green
+			if joint == self.state_selectedJoint:
+				clr = blue
 			pygame.draw.circle(screen, clr, (int(pos1.x), int(pos1.y)), 6, 1)	
 			pygame.draw.lines(screen, clr, False, [(int(pos1.x),int(pos1.y)), (int(pos2.x),int(pos2.y))], 3)
 
@@ -65,7 +67,7 @@ class solverTestState(object):
 			if joint is self.state_selectedJoint:
 				clr = blue
 			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
-			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)		
+			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)	
 
 	def drawProspectiveBeam(self):
 		if self.state_mode_addBeams and self.state_mouseLastCoord is not None \
@@ -154,7 +156,7 @@ class solverTestState(object):
 		return [beam for beam in self.solver.beams if beam.onBeam(pos_vec2, clickDist)]
 
 	def getClickedJoints(self, pos_vec2):
-		return [joint for joint in self.solver.joint if joint.positionOnJoint(pos_vec2, clickDist)]
+		return [joint for joint in self.solver.joints if joint.positionOnJoint(pos_vec2, clickDist)]
 
 	def addBeam(self, beam):
 		self.solver.beams.append(beam)
@@ -191,7 +193,7 @@ class solverTestState(object):
 		self.state_mouseDownCoord = mousePos_vec2
 
 		if self.state_mode_dragManip:
-			return
+			self.selectItem(mousePos_vec2)
 
 		if self.state_mode_addBeams:
 			return
@@ -205,8 +207,6 @@ class solverTestState(object):
 			# see if can add joints connecting multiple beams
 			self.addJointsOnBeams(mousePos_vec2, True)
 			return
-
-
 
 	def mouseDragHandler(self, mousePos):
 		mousePos_vec2 = vec2(mousePos[0], mousePos[1])
@@ -235,6 +235,30 @@ class solverTestState(object):
 		# clear mouse coordinates, we don't care anymore
 		self.state_mouseDownCoord = None
 		self.state_mouseLastCoord = None
+
+	def selectItem(self, mousePos):
+		# set the first one of each as selected
+		beams = self.getClickedBeams(mousePos)
+		joints = self.getClickedJoints(mousePos)
+		# unselect all if you're clicking nowhere
+		if len(beams) == 0 and len(joints) == 0:
+			self.state_selectedBeam = None
+			self.state_selectedJoint = None
+			return
+
+		# if you've clicked something selected, deselect that
+		# otherwise, set the selection
+		if len(beams) > 0:
+			if self.state_selectedBeam is beams[0]:
+				self.state_selectedBeam = None
+			else:
+				self.state_selectedBeam = beams[0]
+
+		if len(joints) > 0:
+			if self.state_selectedJoint is joints[0]:
+				self.state_selectedJoint = None
+			else:
+				self.state_selectedJoint = joints[0]
 
 	def resetModeState(self):
 		self.state_mode_dragManip = False # activate by pressing d
