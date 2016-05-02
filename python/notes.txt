@@ -1,6 +1,9 @@
 5/02/2016
 -implement select and delete mode [done? needs more testing? another look?]
 -addtl crashing problem: quads with 3 solved -> uhhhh it doesn't crash now... [good enough]
+	-ok now it actually solves
+	-was something stupid with not updating joint positions in the triplet solver
+	-yaaaaaay
 -add gears
 -add a button to save the linkage out
 -cleanup: move joint/beam/gear adding to the technicSolver, it shouldn't be in the UI file

@@ -90,11 +90,16 @@ class Solver(object):
 		if numSolved == 3:
 			# figure out which joints to snap to
 			unsolved = quad[singleUnsolvedIDX]
+			#print("finished " + str(unsolved.id) + " with triplet solver")
+
 			solved1 = quad[(singleUnsolvedIDX + 1) % 4]
 			solved2 = quad[(singleUnsolvedIDX - 1) % 4]
 
 			j1 = unsolved.getSharedJoint(solved1)
 			j2 = unsolved.getSharedJoint(solved2)
+			j1.position = j1.positionRelative(solved1)
+			j2.position = j2.positionRelative(solved2)
+
 			unsolved.snapToJoints(j2, j1)
 			unsolved.timestamp = timestamp
 			return True
