@@ -9,6 +9,7 @@ class Solver(object):
 		self.root = None
 		self.beams = []
 		self.joints = []
+		self.gears = []
 
 	def solve(self, timestamp):
 		"""
@@ -30,7 +31,9 @@ class Solver(object):
 				linkedBeam.timestamp = timestamp
 
 		# traverse from whatever's linked to root to solve everything else
+		# this is a DF traversal!
 		# but start with whatever's linked to the driven joint!
+		# this is "already solved"
 
 		beams = self.root.listLinkedBeams(None)
 		beams.remove(linkedBeam)
@@ -73,109 +76,121 @@ class Solver(object):
 		"""
 
 		# get quad
-		#print("getting quad")
 		quad = self.quadCheck(beam, timestamp)
-		#print("quad is")
-		#for beam in quad:
-		#	print(str(beam))
-		#if quad == None:
-		#	print("no quad")
-		#	return
 
-		if quad[0].timestamp == quad[2].timestamp: # unconsecutive
-			#TODO: look at this case some more. how to handle prismatics here?
-			print("unconsecutive")
-			unsolved1 = quad[0]
-			unsolved3 = quad[2]
-			solved2 = quad[1]
-			solved4 = quad[3]
-			if quad[0].timestamp == timestamp:
-				unsolved1 = quad[1]
-				unsolved3 = quad[3]
-				solved2 = quad[0]
-				solved4 = quad[2]
-			joint1 = unsolved1.getShaderJoint(solved4)
-			joint2 = unsolved1.getShaderJoint(solved2)
-			joint3 = unsolved3.getShaderJoint(solved2)
-			joint4 = unsolved3.getShaderJoint(solved4)
-
-			# solve all joint positions
-			joint1.position = joint1.positionRelative(solved4)
-			joint2.position = joint2.positionRelative(solved2)
-			joint3.position = joint3.positionRelative(solved2)
-			joint4.position = joint4.positionRelative(solved4)
-
-			# correct beam positions and orientations
-			unsolved1.snapToJoint(joint1)
-			unsolved1.rotation = math2d.angleToOrientation(joint2.position - joint1.position)
-			unsolved3.snapToJoint(joint3)
-			unsolved3.rotation = math2d.angleToOrientation(joint4.position - joint3.position)
-
-			# update all timestamps
-			unsolved1.timestamp = timestamp
-			unsolved3.timestamp = timestamp
-			unsolved1.updateAllJoints(timestamp)
-			unsolved3.updateAllJoints(timestamp)
-			print("called case 1 quad solve") # debug: does this even happen?
-		else:
-			"""
-			sj1--s0--sj2 -> don't care about this one
-			 |        |
-			 u1       s1
-			 |        |
-			uj0--u0--sj3
-			"""
-			unsolved = []
-			solved = []
-			for beam in quad:
-				if beam.timestamp == timestamp:
-					solved.append(beam)
-				else:
-					unsolved.append(beam)
-
-			if not solved[0].getSharedJoint(unsolved[1]):
-				# shuffle so order matches diagram
-				tmp = solved[1]
-				solved[1] = solved[0]
-				solved[0] = tmp
-
-			sj1 = solved[0].getSharedJoint(unsolved[1])
-			sj3 = solved[1].getSharedJoint(unsolved[0])
-			sj1.position = sj1.positionRelative(solved[0])
-			sj3.position = sj3.positionRelative(solved[1])
-
-			# get position of shared joint
-			uj0 = unsolved[0].getSharedJoint(unsolved[1])
-
-			if not uj0.isPrismatic:
-				# non prismatic case: need to do a quad solve
-				posCandidate = math2d.circleIntersect(
-					sj1.position, \
-					sj3.position, \
-					unsolved[1].distBetweenJoints(sj1, uj0), \
-					unsolved[0].distBetweenJoints(sj3, uj0), \
-					uj0.position)
-
-				if not posCandidate:
-					return False
-
-				uj0.position = posCandidate
-				# update positions and orientations
-				unsolved[0].snapToJoints(sj3, uj0)
-				unsolved[1].snapToJoints(sj1, uj0)
-			
+		# detect triplet solved case
+		numSolved = 0
+		singleUnsolvedIDX = -1
+		for i in xrange(4):
+			if quad[i].timestamp == timestamp:
+				numSolved += 1
 			else:
-				# prismatic case: point each beam at the respective solved joint.
-				uj0.position = (sj3.position + sj1.position) / 2.0
-				unsolved[0].snapToJoints(sj3, uj0)
-				unsolved[1].snapToJoints(sj1, uj0)
+				singleUnsolvedIDX = i
 
-			# update all timestamps
-			unsolved[0].timestamp = timestamp
-			unsolved[1].timestamp = timestamp			
+		if numSolved == 3:
+			# figure out which joints to snap to
+			unsolved = quad[singleUnsolvedIDX]
+			solved1 = quad[(singleUnsolvedIDX + 1) % 4]
+			solved2 = quad[(singleUnsolvedIDX - 1) % 4]
 
+			j1 = unsolved.getSharedJoint(solved1)
+			j2 = unsolved.getSharedJoint(solved2)
+			unsolved.snapToJoints(j1, j2)
+			unsolved.timestamp = timestamp
+			return True
 
-		return True
+		if numSolved == 2:
+			if quad[0].timestamp == quad[2].timestamp: # unconsecutive
+				#TODO: look at this case some more. how to handle prismatics here?
+				unsolved1 = quad[0]
+				unsolved3 = quad[2]
+				solved2 = quad[1]
+				solved4 = quad[3]
+				if quad[0].timestamp == timestamp:
+					unsolved1 = quad[1]
+					unsolved3 = quad[3]
+					solved2 = quad[0]
+					solved4 = quad[2]
+				joint1 = unsolved1.getSharedJoint(solved4)
+				joint2 = unsolved1.getSharedJoint(solved2)
+				joint3 = unsolved3.getSharedJoint(solved2)
+				joint4 = unsolved3.getSharedJoint(solved4)
+
+				# solve all joint positions
+				joint1.position = joint1.positionRelative(solved4)
+				joint2.position = joint2.positionRelative(solved2)
+				joint3.position = joint3.positionRelative(solved2)
+				joint4.position = joint4.positionRelative(solved4)
+
+				# correct beam positions and orientations
+				unsolved1.snapToJoint(joint1)
+				unsolved1.rotation = math2d.angleToOrientation(joint2.position - joint1.position)
+				unsolved3.snapToJoint(joint3)
+				unsolved3.rotation = math2d.angleToOrientation(joint4.position - joint3.position)
+
+				# update all timestamps
+				unsolved1.timestamp = timestamp
+				unsolved3.timestamp = timestamp
+				unsolved1.updateAllJoints(timestamp)
+				unsolved3.updateAllJoints(timestamp)
+				print("called case 1 quad solve") # debug: does this even happen?
+			else:
+				"""
+				sj1--s0--sj2 -> don't care about this one
+				 |        |
+				 u1       s1
+				 |        |
+				uj0--u0--sj3
+				"""
+				unsolved = []
+				solved = []
+				for beam in quad:
+					if beam.timestamp == timestamp:
+						solved.append(beam)
+					else:
+						unsolved.append(beam)
+
+				if not solved[0].getSharedJoint(unsolved[1]):
+					# shuffle so order matches diagram
+					tmp = solved[1]
+					solved[1] = solved[0]
+					solved[0] = tmp
+
+				sj1 = solved[0].getSharedJoint(unsolved[1])
+				sj3 = solved[1].getSharedJoint(unsolved[0])
+				sj1.position = sj1.positionRelative(solved[0])
+				sj3.position = sj3.positionRelative(solved[1])
+
+				# get position of shared joint
+				uj0 = unsolved[0].getSharedJoint(unsolved[1])
+
+				if not uj0.isPrismatic:
+					# non prismatic case: need to do a quad solve
+					posCandidate = math2d.circleIntersect(
+						sj1.position, \
+						sj3.position, \
+						unsolved[1].distBetweenJoints(sj1, uj0), \
+						unsolved[0].distBetweenJoints(sj3, uj0), \
+						uj0.position)
+
+					if not posCandidate:
+						return False
+
+					uj0.position = posCandidate
+					# update positions and orientations
+					unsolved[0].snapToJoints(sj3, uj0)
+					unsolved[1].snapToJoints(sj1, uj0)
+				
+				else:
+					# prismatic case: point each beam at the respective solved joint.
+					uj0.position = (sj3.position + sj1.position) / 2.0
+					unsolved[0].snapToJoints(sj3, uj0)
+					unsolved[1].snapToJoints(sj1, uj0)
+
+				# update all timestamps
+				unsolved[0].timestamp = timestamp
+				unsolved[1].timestamp = timestamp
+			return True
 
 	def quadCheck(self, beam1, timestamp):
 		""" checks if the beam specified is part of a quad
@@ -201,7 +216,7 @@ class Solver(object):
 				#print(str(beam.timestamp) + " " + str(timestamp))
 				if beam.timestamp == timestamp:
 					upToDates += 1
-			if upToDates != 2:
+			if upToDates != 2 and upToDates != 3:
 				continue
 			return quad
 		print("looking at " + str(beam1)) # error, no good quads

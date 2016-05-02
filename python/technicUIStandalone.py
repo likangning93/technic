@@ -83,6 +83,7 @@ class solverTestState(object):
 		self.state_mode_addBeams = False # activate by pressing b
 		self.state_mode_addRotationJoints = False # activate by pressing j
 		self.state_mode_addPrismaticJoints = False # activate by pressing p		
+		self.state_mode_addGears = False # activate by pressing g		
 
 		self.state_play = False
 		self.state_show_labels = False # toggled with l
@@ -265,6 +266,7 @@ class solverTestState(object):
 		self.state_mode_addBeams = False # activate by pressing b
 		self.state_mode_addRotationJoints = False # activate by pressing j	
 		self.state_mode_addPrismaticJoints = False # activate by pressing p
+		self.state_mode_addGears = False # activated by pressing g
 
 	def keyPressHandler(self, key):
 		if key == pygame.K_RIGHT:
@@ -301,7 +303,12 @@ class solverTestState(object):
 		if key == pygame.K_p:
 			print("changed to prismatic joint adding mode")
 			self.resetModeState()
-			self.state_mode_addPrismaticJoints = True # activate by pressing j	
+			self.state_mode_addGears = True # activate by pressing p
+
+		if key == pygame.K_g:
+			print("changed to gear adding mode")
+			self.resetModeState()
+			self.state_mode_addPrismaticJoints = True # activate by pressing g
 
 		if key == pygame.K_DELETE:
 			print("commanded to delete selection")
@@ -314,8 +321,9 @@ class solverTestState(object):
 					self.state_selectedJoint = None
 		pass
 
-#test = solverTestState("deadlock_case1.json")
-test = solverTestState("deadlock_case2.json")
+test = solverTestState("deadlock_case1.json")
+#test = solverTestState("deadlock_case2.json")
+#test = solverTestState()
 
 
 # main drawing loop

@@ -1,6 +1,9 @@
 5/02/2016
 -implement select and delete mode [done? needs more testing? another look?]
+-addtl crashing problem: quads with 3 solved -> uhhhh it doesn't crash now... [good enough]
 -add gears
+-add a button to save the linkage out
+-cleanup: move joint/beam/gear adding to the technicSolver, it shouldn't be in the UI file
 
 GEARS
 -gear class
@@ -32,6 +35,14 @@ GEARS
 	-click a beam and drag out to add a gear
 	-if you hit another gear, radius gets capped and a link is established
 	-releasing click on a beam binds the gear to the beam
+
+thoughts on cams
+-if cams are just ellipoids, we can define a distance from any point on the surface to the center
+-cams are only used between to adjacent beams to determine their relative orientation
+-cam's center is on one beam
+-cam maintains a point of contact on other beam: POC -> center is perpendicular to other beam
+-when we rotate the cam, point of contact changes relative to cam as it rotates
+-hmmm... but 
 
 5/01/2016
 Fix Error Handling [done]

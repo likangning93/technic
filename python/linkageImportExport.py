@@ -41,6 +41,8 @@ def export(solver, filename):
 		Positions	(Float, Float)
 		isDriven	(Boolean)
 		Angle		(float)
+		Prismatic?	(bool)
+
 	"""
 	# build dictionaries of items to names
 	joint_names = {}
