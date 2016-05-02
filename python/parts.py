@@ -6,6 +6,7 @@ class Beam(object):
 	def __init__(self, int_ID):
 		self.id = int_ID
 		self.joints = []
+		self.gears = []
 		self.position = vec2() # do NOT directly modify this except on init!
 		self.rotation = 0.0
 		self.length = 0.0
@@ -252,3 +253,21 @@ class Joint(object):
 			self.beam1.joints.remove(self)
 		if self.beam2:
 			self.beam2.joints.remove(self)
+
+class Gear(object):
+	def __init__(self, int_ID):
+		self.id = int_ID
+		self.radius = 0.0
+		self.neighbors = []
+		self.freeBeam = None
+		self.opt_rigidBeam = None # optional beam whose orientation is rigidly linked to this
+		self.initWorldRotation = 0.0 # initial world rotation
+		self.timestamp = 0
+
+	def delink(self):
+		if self.freeBeam:
+			self.freeBeam.gears.remove(self)
+		if self.opt_rigidBeam:
+			self.opt_rigidBeam.gears.remove(self)
+		for gear in self.neighbors:
+			gear.neighbors.remove(self)

@@ -1,9 +1,37 @@
 5/02/2016
--implement select and delete mode
+-implement select and delete mode [done? needs more testing? another look?]
 -add gears
 
 GEARS
--
+-gear class
+	-has a timestamp
+	-has a radius
+	-has a list of pointers to neighbors
+	-has a beam A that it is attached to
+	-has an optional beam B that it is rigidly attached to
+		-when setting this, make sure that A and B share a joint J
+		-also make sure that this gear is at the joint J
+	-has an initial world rotation, from which all local orientations are derived
+
+-changes to other classes
+	-beams need to have lists of gears, so we can access them
+
+-solving
+	-when a gear is encountered, do a DF solve and reorient all rigidly bound beams
+	-this should happen before any kind of beam traversal
+
+-drawing
+	-can't handle teeth well -> floating point gear radii
+	-unless we can somehow find a GCD amongst all the gears -> horrible mess
+	-or unless we make all gears the same size -> silly
+	-or use nothing but snappable sizes
+	-but anyway, should draw some kind of orientation something
+
+-UX
+	-additional mode
+	-click a beam and drag out to add a gear
+	-if you hit another gear, radius gets capped and a link is established
+	-releasing click on a beam binds the gear to the beam
 
 5/01/2016
 Fix Error Handling [done]
