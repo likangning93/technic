@@ -195,7 +195,16 @@ class Beam(object):
 			nearJoint = joint2
 			farJoint = joint1
 
+		#print("new call to snapToJoints")
 		# get orientation from nearJoint to farJoint
+		#print(str(joint1.position)) # debug
+		#print(str(joint2.position)) # debug
+#
+		#print(str(farJoint.position)) # debug
+		#print(str(nearJoint.position)) # debug
+#
+		#print("beam" + str(self.id))
+
 		direction = farJoint.position - nearJoint.position
 		rotation = math2d.angleToOrientation(direction)
 

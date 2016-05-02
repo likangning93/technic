@@ -2,6 +2,7 @@
 Fix Error Handling
 -"bouncing"
 -take a look at anything that returns a 'None'
+-also, maybe use exception handling to save any configs that cause a crash?
 
 Prismatic Joints
 -modified joint

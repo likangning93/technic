@@ -5,20 +5,27 @@ from parts import Beam, Joint
 import math2d
 from math2d import vec2
 import linkageImportExport
+import datetime
 
 # help from https://www.cs.ucsb.edu/~pconrad/cs5nm/topics/pygame/drawing/
 
+# pygame stuff
 pygame.init()
+pygame.display.set_caption('technic standalone UI')
 clock = pygame.time.Clock() # for maintaining constant update time
-screen = pygame.display.set_mode((640,480)) # open a window
+screen = pygame.display.set_mode((800,600)) # open a window
+basicfont = pygame.font.SysFont(None, 14)
 
+# drawing constants
 bg_color = (255, 255, 255)
 black = (0,0,0)
 red = (255, 0, 0)
 blue = (0, 0, 255)
 teal = (0, 255, 255)
 
+# simulator/UI constants
 clickDist = 5.0
+outputFail = False
 
 class solverTestState(object):
 
@@ -32,14 +39,23 @@ class solverTestState(object):
 		pygame.draw.lines(screen, clr, False, [(int(pos.x),int(pos.y)), (int(end.x),int(end.y))], 1)
 		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 0)
 		pygame.draw.circle(screen, clr, (int(end.x), int(end.y)), 2, 0)
+
+		# draw text of name
+		text = basicfont.render("beam " + str(beam.id), True, (255, 0, 0), (255, 255, 255))
+		pos_text = beam.getPosAlongBeam(beam.length / 2.0)
+		screen.blit(text, (pos_text.x, pos_text.y))
+
 		# draw each of the joints along this beam
 		for joint in beam.joints:
-			pos = joint.positionRelative(beam)
-			clr = joint.color
-			if joint is self.state_selectedJoint:
-				clr = blue
-			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
-			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)
+			self.drawJoint(joint)
+
+	def drawJoint(self, joint):
+		pos = joint.positionRelative(beam)
+		clr = joint.color
+		if joint is self.state_selectedJoint:
+			clr = blue
+		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
+		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)		
 
 	def drawProspectiveBeam(self):
 		if self.state_mode_addBeams and self.state_mouseLastCoord is not None \
@@ -64,6 +80,8 @@ class solverTestState(object):
 		self.state_soleStaticJoint = None
 		self.nextBeamID = 5
 
+		self.dAngle = 0.1
+
 		self.time = 1
 		self.solver = technicSolver.generateDefaultLinkage()
 		if filename is not None:
@@ -77,9 +95,37 @@ class solverTestState(object):
 
 	def solve(self):
 		if self.state_play:
-			self.solver.solve(self.time)
-			self.driverJoint.preferredAngle += 0.1
-			self.time += 1
+			if not outputFail:
+				noDeadlock = self.solver.solve(self.time)
+				if not noDeadlock:
+					self.dAngle = -self.dAngle
+				self.driverJoint.preferredAngle += self.dAngle
+				self.time += 1
+			else:
+				try:
+					noDeadlock = self.solver.solve(self.time)
+					if not noDeadlock:
+						self.dAngle = -self.dAngle
+					self.driverJoint.preferredAngle += self.dAngle
+					self.time += 1
+				except TypeError:
+					print("type error encountered!")
+					print("possible that you are missing a quad?")
+					filename = datetime.datetime.now().isoformat()
+					filename += " type error fail.json"
+					save_or_no = raw_input("Save log file? y/n")
+					if save_or_no == 'y':
+						linkageImportExport.export(self.solver, filename)
+					quit()
+				except AttributeError:
+					print("attribute error encountered!")
+					print("possible that a quad is unsolveable?")
+					filename = datetime.datetime.now().isoformat()
+					filename += " attrib error fail.json"
+					save_or_no = raw_input("Save log file? y/n")
+					if save_or_no == 'y':
+						linkageImportExport.export(self.solver, filename)
+					quit()
 
 	def stepFwd(self):
 		self.driverJoint.preferredAngle += 0.1
@@ -212,7 +258,9 @@ class solverTestState(object):
 					self.state_selectedJoint = None
 		pass
 
-test = solverTestState("test.json")
+#test = solverTestState("deadlock_case1.json")
+test = solverTestState("deadlock_case2.json")
+
 
 # main drawing loop
 while True:
@@ -249,4 +297,5 @@ while True:
 
 	# update the screen
 	msElapsed = clock.tick(60) # force to 60 fps
+	text = basicfont.render('Hello World!', True, (255, 0, 0), (255, 255, 255))
 	pygame.display.update() # analagous to swap buffers

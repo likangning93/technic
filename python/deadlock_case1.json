@@ -1,0 +1,202 @@
+{
+    "JOINTS": [
+        {
+            "ANGLE": 7.9999999999999885,
+            "NAME": "joint0",
+            "BEAMS": [
+                "beam0",
+                "beam1"
+            ],
+            "DRIVE": true,
+            "POS": [
+                48.0,
+                0.0
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint1",
+            "BEAMS": [
+                "beam2",
+                "beam1"
+            ],
+            "DRIVE": false,
+            "POS": [
+                0.0,
+                24.0
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint2",
+            "BEAMS": [
+                "beam3",
+                "beam2"
+            ],
+            "DRIVE": false,
+            "POS": [
+                38.0,
+                72.0
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint3",
+            "BEAMS": [
+                "beam3",
+                "beam0"
+            ],
+            "DRIVE": false,
+            "POS": [
+                0.0,
+                120.0
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint4",
+            "BEAMS": [
+                "beam3",
+                "beam5"
+            ],
+            "DRIVE": false,
+            "POS": [
+                27.300845665866813,
+                39.041959923838895
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint5",
+            "BEAMS": [
+                "beam4",
+                "beam5"
+            ],
+            "DRIVE": false,
+            "POS": [
+                38.17047794881195,
+                12.368771636754119
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        },
+        {
+            "ANGLE": 0.0,
+            "NAME": "joint6",
+            "BEAMS": [
+                "beam0",
+                "beam4"
+            ],
+            "DRIVE": false,
+            "POS": [
+                90.0,
+                16.142530079058616
+            ],
+            "TYPE": "<class 'parts.Joint'>"
+        }
+    ],
+    "BEAMS": [
+        {
+            "ROTAT": 1.5707963267948966,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                400.0,
+                300.0
+            ],
+            "LENGTH": 120.0,
+            "JOINTS": [
+                "joint0",
+                "joint3",
+                "joint6"
+            ],
+            "ROOT": true,
+            "ID": 1,
+            "NAME": "beam0"
+        },
+        {
+            "ROTAT": 7.9999999999999885,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                400.0,
+                348.0
+            ],
+            "LENGTH": 24.0,
+            "JOINTS": [
+                "joint0",
+                "joint1"
+            ],
+            "ROOT": false,
+            "ID": 2,
+            "NAME": "beam1"
+        },
+        {
+            "ROTAT": 2.008436151699167,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                396.50799918859354,
+                371.7445979189612
+            ],
+            "LENGTH": 72.0,
+            "JOINTS": [
+                "joint1",
+                "joint2"
+            ],
+            "ROOT": false,
+            "ID": 3,
+            "NAME": "beam2"
+        },
+        {
+            "ROTAT": 2.678980413318066,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                400.0,
+                420.0
+            ],
+            "LENGTH": 120.0,
+            "JOINTS": [
+                "joint2",
+                "joint3",
+                "joint4"
+            ],
+            "ROOT": false,
+            "ID": 4,
+            "NAME": "beam3"
+        },
+        {
+            "ROTAT": 2.2721803325926824,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                410.4163810394486,
+                377.66791650229663
+            ],
+            "LENGTH": 259.6247291765559,
+            "JOINTS": [
+                "joint5",
+                "joint6"
+            ],
+            "ROOT": false,
+            "ID": 5,
+            "NAME": "beam4"
+        },
+        {
+            "ROTAT": 1.9813260261180763,
+            "TYPE": "<class 'parts.Beam'>",
+            "POS": [
+                390.7222181567879,
+                395.48720271109323
+            ],
+            "LENGTH": 51.66236541235796,
+            "JOINTS": [
+                "joint4",
+                "joint5"
+            ],
+            "ROOT": false,
+            "ID": 6,
+            "NAME": "beam5"
+        }
+    ]
+}
