@@ -22,6 +22,7 @@ black = (0,0,0)
 red = (255, 0, 0)
 blue = (0, 0, 255)
 teal = (0, 255, 255)
+green = (0, 200, 0)
 
 # simulator/UI constants
 clickDist = 5.0
@@ -40,22 +41,31 @@ class solverTestState(object):
 		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 0)
 		pygame.draw.circle(screen, clr, (int(end.x), int(end.y)), 2, 0)
 
-		# draw text of name
-		text = basicfont.render("beam " + str(beam.id), True, (255, 0, 0), (255, 255, 255))
-		pos_text = beam.getPosAlongBeam(beam.length / 2.0)
-		screen.blit(text, (pos_text.x, pos_text.y))
+		if self.state_show_labels: # toggled with l
+			# draw text of name
+			text = basicfont.render("beam " + str(beam.id), True, (255, 0, 0), (255, 255, 255))
+			pos_text = beam.getPosAlongBeam(beam.length / 2.0)
+			screen.blit(text, (pos_text.x, pos_text.y))
 
 		# draw each of the joints along this beam
 		for joint in beam.joints:
-			self.drawJoint(joint)
+			self.drawJoint(joint, beam)
 
-	def drawJoint(self, joint):
-		pos = joint.positionRelative(beam)
-		clr = joint.color
-		if joint is self.state_selectedJoint:
-			clr = blue
-		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
-		pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)		
+	def drawJoint(self, joint, beam):
+		if joint.isPrismatic:
+			pos1 = joint.positionRelative(beam)
+			pos2 = joint.positionRelative(joint.getOtherbeam(beam))
+			clr = green
+			pygame.draw.circle(screen, clr, (int(pos1.x), int(pos1.y)), 6, 1)	
+			pygame.draw.lines(screen, clr, False, [(int(pos1.x),int(pos1.y)), (int(pos2.x),int(pos2.y))], 3)
+
+		else:
+			pos = joint.positionRelative(beam)
+			clr = joint.color
+			if joint is self.state_selectedJoint:
+				clr = blue
+			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
+			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)		
 
 	def drawProspectiveBeam(self):
 		if self.state_mode_addBeams and self.state_mouseLastCoord is not None \
@@ -69,8 +79,11 @@ class solverTestState(object):
 		# simulation state members
 		self.state_mode_dragManip = False # activate by pressing d
 		self.state_mode_addBeams = False # activate by pressing b
-		self.state_mode_addJoints = False # activate by pressing j
+		self.state_mode_addRotationJoints = False # activate by pressing j
+		self.state_mode_addPrismaticJoints = False # activate by pressing p		
+
 		self.state_play = False
+		self.state_show_labels = False # toggled with l
 
 		self.state_mouseDownCoord = None
 		self.state_mouseLastCoord = None
@@ -159,7 +172,7 @@ class solverTestState(object):
 			self.solver.joints.remove(joint)
 			joint.delink()
 
-	def addJointsOnBeams(self, pos_vec2):
+	def addJointsOnBeams(self, pos_vec2, prismatic):
 		clickedBeams = self.getClickedBeams(pos_vec2)
 		# generate a new joint between every pair of clicked beams
 		numClicked = len(clickedBeams)
@@ -167,6 +180,7 @@ class solverTestState(object):
 			newJ = clickedBeams[i].joinByWorldPos(clickedBeams[i + 1], pos_vec2, clickDist)
 			if newJ:
 				self.solver.joints.append(newJ)
+			newJ.isPrismatic = prismatic
 
 	def deleteJoint(self, joint):
 		joint.delink()
@@ -182,10 +196,16 @@ class solverTestState(object):
 		if self.state_mode_addBeams:
 			return
 
-		if self.state_mode_addJoints:
+		if self.state_mode_addRotationJoints:
 			# see if can add joints connecting multiple beams
-			self.addJointsOnBeams(mousePos_vec2)
+			self.addJointsOnBeams(mousePos_vec2, False)
 			return
+
+		if self.state_mode_addPrismaticJoints:
+			# see if can add joints connecting multiple beams
+			self.addJointsOnBeams(mousePos_vec2, True)
+			return
+
 
 
 	def mouseDragHandler(self, mousePos):
@@ -216,6 +236,12 @@ class solverTestState(object):
 		self.state_mouseDownCoord = None
 		self.state_mouseLastCoord = None
 
+	def resetModeState(self):
+		self.state_mode_dragManip = False # activate by pressing d
+		self.state_mode_addBeams = False # activate by pressing b
+		self.state_mode_addRotationJoints = False # activate by pressing j	
+		self.state_mode_addPrismaticJoints = False # activate by pressing p
+
 	def keyPressHandler(self, key):
 		if key == pygame.K_RIGHT:
 			#print("ffwd")
@@ -229,23 +255,29 @@ class solverTestState(object):
 			#print("toggle pause/play")
 			self.state_play = not self.state_play
 
+		if key == pygame.K_l:
+			print("toggled labels")
+			self.state_show_labels = not self.state_show_labels # activate by pressing l
+
 		if key == pygame.K_s:
 			print("changed to select and drag mode")
+			self.resetModeState()
 			self.state_mode_dragManip = True # activate by pressing d
-			self.state_mode_addBeams = False # activate by pressing b
-			self.state_mode_addJoints = False # activate by pressing j
 
 		if key == pygame.K_b:
 			print("changed to beam adding mode")
-			self.state_mode_dragManip = False # activate by pressing d
+			self.resetModeState()			
 			self.state_mode_addBeams = True # activate by pressing b
-			self.state_mode_addJoints = False # activate by pressing j			
 
 		if key == pygame.K_j:
-			print("changed to joint adding mode")
-			self.state_mode_dragManip = False # activate by pressing d
-			self.state_mode_addBeams = False # activate by pressing b
-			self.state_mode_addJoints = True # activate by pressing j			
+			print("changed to rotational joint adding mode")
+			self.resetModeState()
+			self.state_mode_addRotationJoints = True # activate by pressing j	
+
+		if key == pygame.K_p:
+			print("changed to prismatic joint adding mode")
+			self.resetModeState()
+			self.state_mode_addPrismaticJoints = True # activate by pressing j	
 
 		if key == pygame.K_DELETE:
 			print("commanded to delete selection")

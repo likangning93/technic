@@ -12,6 +12,7 @@ NAME = 'NAME'
 POS = 'POS'
 ANGLE = 'ANGLE'
 DRIVE = 'DRIVE'
+PRISM = 'PRISM'
 ROOT = 'ROOT'
 LENGTH = 'LENGTH'
 ROTAT = "ROTAT"
@@ -64,6 +65,7 @@ def export(solver, filename):
 		joint_dict[POS] = [joint.beam1_pos, joint.beam2_pos]
 		joint_dict[DRIVE] = joint.isDriver
 		joint_dict[ANGLE] = joint.preferredAngle
+		joint_dict[PRISM] = joint.isPrismatic
 		joint_dicts.append(joint_dict)
 
 	beam_dicts = []
@@ -129,6 +131,8 @@ def load(filename):
 		joint = beam1.joinWithBeam(pos1, beam2, pos2)
 		joint.isDriver = joint_dict[DRIVE]
 		joint.preferredAngle = joint_dict[ANGLE]
+		if PRISM in joint_dict:
+			joint.isPrismatic = joint_dict[PRISM]
 		solver.joints.append(joint)
 
 	return solver

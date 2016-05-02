@@ -195,16 +195,6 @@ class Beam(object):
 			nearJoint = joint2
 			farJoint = joint1
 
-		#print("new call to snapToJoints")
-		# get orientation from nearJoint to farJoint
-		#print(str(joint1.position)) # debug
-		#print(str(joint2.position)) # debug
-#
-		#print(str(farJoint.position)) # debug
-		#print(str(nearJoint.position)) # debug
-#
-		#print("beam" + str(self.id))
-
 		direction = farJoint.position - nearJoint.position
 		rotation = math2d.angleToOrientation(direction)
 
@@ -221,10 +211,13 @@ class Joint(object):
 		self.timestamp = 0
 		self.beam1 = None
 		self.beam2 = None
+		self.isPrismatic = False # determines if this is a prismatic joint.
+
+		# rotational joint parameters
 		self.beam1_pos = -1.0
 		self.beam2_pos = -2.0
-		self.isDriver = False
 		self.preferredAngle = 0.0
+		self.isDriver = False
 
 		# debug
 		self.color = (255, 0, 0)
