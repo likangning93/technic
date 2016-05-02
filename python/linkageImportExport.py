@@ -1,12 +1,13 @@
 import json
 import technicSolver
-from parts import Joint, Beam
+from parts import Joint, Beam, Gear
 from math2d import vec2
 
 # json markers
 TYPE = 'TYPE'
 JOINT = str(Joint)
 BEAM = str(Beam)
+GEAR = str(Gear)
 NAME = 'NAME'
 
 POS = 'POS'
@@ -18,6 +19,12 @@ LENGTH = 'LENGTH'
 ROTAT = "ROTAT"
 JOINTS = 'JOINTS'
 BEAMS = 'BEAMS'
+GEARLST = 'GEARLST' # neighbors, for gears. also for beams.
+RGDBM = 'RIGIDBEAM'
+FREBM = 'FREEBEAM'
+RGDBM_P = 'RIGIDBEAM_P'
+FREBM_P = 'FREEBEAM_P'
+RADIUS = 'RADIUS'
 ID = 'ID'
 
 def export(solver, filename):
@@ -47,6 +54,7 @@ def export(solver, filename):
 	# build dictionaries of items to names
 	joint_names = {}
 	beam_names = {}
+	gear_neams = {}
 	i = 0
 	for joint in solver.joints:
 		joint_names[joint] = 'joint' + str(i)
@@ -55,6 +63,10 @@ def export(solver, filename):
 	i = 0
 	for beam in solver.beams:
 		beam_names[beam] = 'beam' + str(i)
+		i += 1
+	i = 0
+	for gear in solver.gears:
+		gear_neams[gear] = 'gear' + str(i)
 		i += 1
 
 	# put all the items in the linkage into json format dictionaries in a list
@@ -80,11 +92,28 @@ def export(solver, filename):
 		beam_dict[LENGTH] = beam.length
 		beam_dict[ROTAT] = beam.rotation
 		beam_dict[JOINTS] = [joint_names[joint] for joint in beam.joints]
+		beam_dict[GEARLST] = [gear_names[gear] for gear in beam.gears]		
 		beam_dict[ID] = beam.id
 		beam_dicts.append(beam_dict)
 
+	gear_dicts = []
+	for gear in solver.gears:
+		gear_dict = {}
+		gear_dict[TYPE] = GEAR
+		gear_dict[NAME] = gear_names[gear]
+		gear_dict[RADIUS] = gear.radius
+		gear_dict[GEARLST] = [gear_names[neighbor] for neighbor in gear.neighbors]
+		gear_dict[FREEBEAM] = beam_names[gear.freeBeam]
+		gear_dict[FREEBEAM_P] = gear.freeBeam_pos	
+		if gear.opt_rigidBeam:
+			gear_dict[RIGIDBEAM] = beam_names[gear.opt_rigidBeam]
+			gear_dict[RIGIDBEAM_P] = gear.opt_rigidBeam_pos
+		geard_dict[ANGLE] = gear.initWorldRotation
+		gear_dicts.append(gear_dict)
+
+
 	# export to file
-	json_dict = {"JOINTS" : joint_dicts, "BEAMS" : beam_dicts}
+	json_dict = {"JOINTS" : joint_dicts, "BEAMS" : beam_dicts, "GEARS" : gear_dicts}
 	json_str = json.dumps(json_dict, indent=4, separators=(',', ': '))
 	json_file = open(filename, 'w')
 	json_file.write(json_str)
@@ -106,12 +135,16 @@ def load(filename):
 	json_file.close()
 	beam_dicts = json_dict["BEAMS"]
 	joint_dicts = json_dict["JOINTS"]
+	gear_dicts = []
+	if "GEARS" in json_dict:
+		gear_dicts = json_dict["GEARS"]
 
 	solver = technicSolver.Solver()
 
 	# make all the beams. build a dictionary of beams to beam names/joint lists
 	names_beams = {}
-	names_jointNames = {}
+	#names_jointNames = {}
+	names_gears = {}
 
 	for beam_dict in beam_dicts:
 		beam = Beam(beam_dict[ID])
@@ -122,7 +155,7 @@ def load(filename):
 			solver.root = beam
 		solver.beams.append(beam)
 		names_beams[beam_dict[NAME]] = beam
-		names_jointNames[beam_dict[NAME]] = beam_dict[JOINTS]
+		#names_jointNames[beam_dict[NAME]] = beam_dict[JOINTS]
 
 	# walk over the list of joints and build connections
 	for joint_dict in joint_dicts:
@@ -136,5 +169,31 @@ def load(filename):
 		if PRISM in joint_dict: # for compatability, some of my old test files don't have prismatics
 			joint.isPrismatic = joint_dict[PRISM]
 		solver.joints.append(joint)
+
+	# walk over the list of gears and build a bunch of unconnected gears
+	# build up the dictionary we need
+	# also, update beams as we go
+	for gear_dict in gear_dicts:
+		gear = Gear(gear_dict[ID])
+		gear.radius = gear_dict[RADIUS]
+		gear.freeBeam = names_beams[gear_dict[FREEBEAM]]
+		gear.freeBeam.gears.append(gear)		
+		gear.freeBeam_pos = gear_dict[FREEBEAM_P]
+
+		if RIGIDBEAM in gear_dict:
+			gear.opt_rigidBeam = names_beams[gear_dict[RIGIDBEAM]]
+			gear.opt_rigidBeam.gears.append(gear)
+		if RIGIDBEAM_P in gear_dict:
+			gear.opt_rigidBeam_pos = gear_dict[RIGIDBEAM_P]
+
+		gear.initWorldRotation = gear_dict[ANGLE]
+		solver.gears.append(gear)
+		names_gearNames[gear_dict[NAME]] = gear
+
+	# walk over the list of gears again and propagate all connectedness
+	for i in xrange(len(gear_dicts)):
+		gearNameList = gear_dicts[i][GEARLST]
+		for gearName in gearNameList:
+			solver.gears[i].neighbors.append(names_gears[gearName])
 
 	return solver

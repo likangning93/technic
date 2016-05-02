@@ -5,7 +5,11 @@
 	-was something stupid with not updating joint positions in the triplet solver
 	-yaaaaaay
 -add gears
--add a button to save the linkage out
+	-do the UI and system IO integration first
+		-IO integration: [done, needs testing?]
+	-just so there's something to work with
+
+-add a button to save the linkage out [done]
 -cleanup: move joint/beam/gear adding to the technicSolver, it shouldn't be in the UI file
 
 GEARS

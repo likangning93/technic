@@ -258,10 +258,13 @@ class Gear(object):
 	def __init__(self, int_ID):
 		self.id = int_ID
 		self.radius = 0.0
-		self.neighbors = []
+		self.freeBeam_pos = -1.0
+		self.opt_rigidBeam_pos = -1.0
+		self.initWorldRotation = 0.0 # initial world rotation
+		
 		self.freeBeam = None
 		self.opt_rigidBeam = None # optional beam whose orientation is rigidly linked to this
-		self.initWorldRotation = 0.0 # initial world rotation
+		self.neighbors = []
 		self.timestamp = 0
 
 	def delink(self):

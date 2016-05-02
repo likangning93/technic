@@ -95,7 +95,7 @@ class solverTestState(object):
 		self.state_selectedBeam = None
 		self.state_selectedJoint = None
 		self.state_soleStaticJoint = None
-		self.nextBeamID = 5
+		self.nextBeamID = -1
 
 		self.dAngle = 0.1
 
@@ -109,6 +109,8 @@ class solverTestState(object):
 			if joint.isDriver:
 				self.driverJoint = joint
 				break
+
+		self.nextBeamID = len(self.solver.beams) + 1
 
 	def solve(self):
 		if self.state_play:
@@ -304,12 +306,12 @@ class solverTestState(object):
 		if key == pygame.K_p:
 			print("changed to prismatic joint adding mode")
 			self.resetModeState()
-			self.state_mode_addGears = True # activate by pressing p
+			self.state_mode_addPrismaticJoints = True # activate by pressing p
 
 		if key == pygame.K_g:
 			print("changed to gear adding mode")
 			self.resetModeState()
-			self.state_mode_addPrismaticJoints = True # activate by pressing g
+			self.state_mode_addGears = True # activate by pressing g
 
 		if key == pygame.K_DELETE:
 			print("commanded to delete selection")
@@ -321,6 +323,14 @@ class solverTestState(object):
 				elif self.state_selectedJoint: # prioritize deleting beams
 					self.deleteJoint(self.state_selectedJoint)
 					self.state_selectedJoint = None
+
+		if key == pygame.K_s:
+			filename = datetime.datetime.now().isoformat()
+			filename += ".json"
+			save_or_no = raw_input("save current linkage? y/n")
+			if save_or_no == 'y':
+				print("saved to file `" + filename + "`")
+				linkageImportExport.export(self.solver, filename)
 		pass
 
 test = solverTestState("deadlock_case1.json")
@@ -357,7 +367,10 @@ while True:
 
 	test.solve()
 	# draw things
-	test.drawProspectiveBeam()
+	if test.state_mode_addBeams:
+		test.drawProspectiveBeam()
+
+	# draw actual linkage
 	for beam in test.solver.beams:
 		test.drawBeam(beam)
 
