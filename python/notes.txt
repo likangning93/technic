@@ -1,10 +1,18 @@
-5/01/2016
-Fix Error Handling
--"bouncing"
--take a look at anything that returns a 'None'
--also, maybe use exception handling to save any configs that cause a crash?
+5/02/2016
+-implement select and delete mode
+-add gears
 
-Prismatic Joints
+GEARS
+-
+
+5/01/2016
+Fix Error Handling [done]
+-"bouncing" [done]
+-take a look at anything that returns a 'None'
+-also, maybe use exception handling to save any configs that cause a crash? [done]
+	-also made this toggleable!
+
+Prismatic Joints [done]
 -modified joint
 -beams should just point at each others' "other ends" in the quad solve
 -maybe draw something in between?

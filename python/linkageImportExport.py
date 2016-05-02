@@ -131,7 +131,7 @@ def load(filename):
 		joint = beam1.joinWithBeam(pos1, beam2, pos2)
 		joint.isDriver = joint_dict[DRIVE]
 		joint.preferredAngle = joint_dict[ANGLE]
-		if PRISM in joint_dict:
+		if PRISM in joint_dict: # for compatability, some of my old test files don't have prismatics
 			joint.isPrismatic = joint_dict[PRISM]
 		solver.joints.append(joint)
 
