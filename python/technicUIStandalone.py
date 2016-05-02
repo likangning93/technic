@@ -6,6 +6,7 @@ import math2d
 from math2d import vec2
 import linkageImportExport
 import datetime
+import copy
 
 # help from https://www.cs.ucsb.edu/~pconrad/cs5nm/topics/pygame/drawing/
 
@@ -170,10 +171,10 @@ class solverTestState(object):
 		if beam not in self.solver.beams:
 			return
 		self.solver.beams.remove(beam)
+		jointsListCpy = copy.copy(beam.joints)
 		# delete all joints linked to this beam
-		for joint in beam.joints:
-			self.solver.joints.remove(joint)
-			joint.delink()
+		for joint in jointsListCpy:
+			self.deleteJoint(joint)
 
 	def addJointsOnBeams(self, pos_vec2, prismatic):
 		clickedBeams = self.getClickedBeams(pos_vec2)
@@ -316,7 +317,8 @@ class solverTestState(object):
 				if self.state_selectedBeam:
 					self.deleteBeam(self.state_selectedBeam)
 					self.state_selectedBeam = None
-				if self.state_selectedJoint:
+					self.state_selectedJoint = None	
+				elif self.state_selectedJoint: # prioritize deleting beams
 					self.deleteJoint(self.state_selectedJoint)
 					self.state_selectedJoint = None
 		pass

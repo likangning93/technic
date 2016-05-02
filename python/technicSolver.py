@@ -95,7 +95,7 @@ class Solver(object):
 
 			j1 = unsolved.getSharedJoint(solved1)
 			j2 = unsolved.getSharedJoint(solved2)
-			unsolved.snapToJoints(j1, j2)
+			unsolved.snapToJoints(j2, j1)
 			unsolved.timestamp = timestamp
 			return True
 
@@ -219,7 +219,7 @@ class Solver(object):
 			if upToDates != 2 and upToDates != 3:
 				continue
 			return quad
-		print("looking at " + str(beam1)) # error, no good quads
+		#print("looking at " + str(beam1)) # error, no good quads
 
 def generateDefaultLinkage():
 	""" generates a solver with a basic linkage """
