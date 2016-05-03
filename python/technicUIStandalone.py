@@ -522,8 +522,9 @@ class solverTestState(object):
 				linkageImportExport.export(self.solver, filename)
 		pass
 
-test = solverTestState("deadlock_case1.json")
+#test = solverTestState("deadlock_case1.json")
 #test = solverTestState("deadlock_case2.json")
+test = solverTestState("gear_case1.json")
 #test = solverTestState()
 
 

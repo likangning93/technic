@@ -56,7 +56,7 @@ def export(solver, filename):
 	# build dictionaries of items to names
 	joint_names = {}
 	beam_names = {}
-	gear_neams = {}
+	gear_names = {}
 	i = 0
 	for joint in solver.joints:
 		joint_names[joint] = 'joint' + str(i)
@@ -68,7 +68,7 @@ def export(solver, filename):
 		i += 1
 	i = 0
 	for gear in solver.gears:
-		gear_neams[gear] = 'gear' + str(i)
+		gear_names[gear] = 'gear' + str(i)
 		i += 1
 
 	# put all the items in the linkage into json format dictionaries in a list
@@ -102,14 +102,15 @@ def export(solver, filename):
 	for gear in solver.gears:
 		gear_dict = {}
 		gear_dict[TYPE] = GEAR
+		gear_dict[ID] = gear.id		
 		gear_dict[NAME] = gear_names[gear]
 		gear_dict[RADIUS] = gear.radius
 		gear_dict[GEARLST] = [gear_names[neighbor] for neighbor in gear.neighbors]
-		gear_dict[FREEBEAM] = beam_names[gear.freeBeam]
-		gear_dict[FREEBEAM_P] = gear.freeBeam_pos
+		gear_dict[FREBM] = beam_names[gear.freeBeam]
+		gear_dict[FREBM_P] = gear.freeBeam_pos
 		if gear.opt_freeBeam:
-			gear_dict[FREEBEAM_OPT] = beam_names[gear.opt_freeBeam]
-			gear_dict[FREEBEAM_OPT_P] = gear.opt_freeBeam_pos
+			gear_dict[FREBM_OPT] = beam_names[gear.opt_freeBeam]
+			gear_dict[FREBM_OPT_P] = gear.opt_freeBeam_pos
 		if gear.opt_rigidBeam:
 			gear_dict[RGDBM_OPT] = beam_names[gear.opt_rigidBeam]
 			gear_dict[RGDBM_OPT_P] = gear.opt_rigidBeam_pos
@@ -180,24 +181,25 @@ def load(filename):
 	for gear_dict in gear_dicts:
 		gear = Gear(gear_dict[ID])
 		gear.radius = gear_dict[RADIUS]
-		gear.freeBeam = names_beams[gear_dict[FREEBEAM]]
+		gear.freeBeam = names_beams[gear_dict[FREBM]]
 		gear.freeBeam.gears.append(gear)		
-		gear.freeBeam_pos = gear_dict[FREEBEAM_P]
+		gear.freeBeam_pos = gear_dict[FREBM_P]
 
 		if RGDBM_OPT in gear_dict:
 			gear.opt_rigidBeam = names_beams[gear_dict[RGDBM_OPT]]
 			gear.opt_rigidBeam.gears.append(gear)
 		if RGDBM_OPT_P in gear_dict:
-			gear.opt_rigidBeam_pos = gear_dict[RIGIDBEAM_P]
+			gear.opt_rigidBeam_pos = gear_dict[RGDBM_OPT_P]
 
-		if FREEBEAM_OPT in gear_dict:
-			gear.opt_freeBeam = names_beams[gear_dict[FREEBEAM_OPT]]
+		if FREBM_OPT in gear_dict:
+			gear.opt_freeBeam = names_beams[gear_dict[FREBM_OPT]]
 			gear.opt_freeBeam.gears.append(gear)
-		if FREEBEAM_OPT_P in gear_dict:
-			gear.opt_freeBeam_pos = gear_dict[FREEBEAM_OPT_P]			
+		if FREBM_OPT_P in gear_dict:
+			gear.opt_freeBeam_pos = gear_dict[FREBM_OPT_P]			
 
 		solver.gears.append(gear)
-		names_gearNames[gear_dict[NAME]] = gear
+		gear.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
+		names_gears[gear_dict[NAME]] = gear
 
 	# walk over the list of gears again and propagate all connectedness
 	for i in xrange(len(gear_dicts)):
