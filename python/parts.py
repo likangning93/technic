@@ -340,7 +340,7 @@ class Gear(object):
 
 	def solve(self, timestamp):
 		# can't start solving if this isn't being driven by a beam's orientation
-		if not self.opt_rigidBeam:
+		if not self.opt_rigidBeam or self.timestamp == timestamp:
 			return
 
 		# update this joint to match the beam that drives it
@@ -365,8 +365,10 @@ class Gear(object):
 
 			# update any unsolved beams attached to this
 			if gear.opt_rigidBeam and gear.opt_rigidBeam.timestamp != timestamp:
+				# reposition
 				commonJoint = gear.opt_rigidBeam.getSharedJoint(gear.freeBeam)
 				commonJoint.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
 				gear.opt_rigidBeam.snapToJoint(commonJoint)
+				# orient
 				gear.opt_rigidBeam.rotation = gear.rotation
 				gear.opt_rigidBeam.timestamp = timestamp

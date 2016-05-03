@@ -48,6 +48,7 @@ class Solver(object):
 					return False
 			# update all gear chains attached to this beam
 			for gear in beam.gears:
+				gear.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)				
 				gear.solve(timestamp)
 
 			# get linked beams
@@ -55,10 +56,6 @@ class Solver(object):
 			linkedBeams = beam.listLinkedBeams(None)
 			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp != timestamp and not nbeam in beams]
 			beams = beams + unsolvedBeams
-
-		# position all the gears
-		for gear in self.gears:
-			gear.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
 
 		return True
 

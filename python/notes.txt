@@ -4,7 +4,7 @@
 	-ok now it actually solves
 	-was something stupid with not updating joint positions in the triplet solver
 	-yaaaaaay
--add gears
+-add gears [done, but some small glitches and needs more testing in the future]
 	-do the UI and system IO integration first
 		-IO integration: [done, needs testing?]
 	-just so there's something to work with
