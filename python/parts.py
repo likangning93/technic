@@ -1,6 +1,7 @@
 import math
 import math2d
 from math2d import vec2
+import copy
 
 class Beam(object):
 	def __init__(self, int_ID):
@@ -205,6 +206,27 @@ class Beam(object):
 		# snap it to the nearJoint
 		self.snapToJoint(joint1)
 
+	def getLinkableGears(self):
+		# list all gears linkable on this beam
+		# linkable gears are those on it or on a joint shared with an adjacent
+		# excepting gears rigid-linked to this beam
+		gears = []
+		for gear in self.gears:
+			if gear.opt_rigidBeam is not self:
+				gears.append(gear)
+		linkedBeams = self.listLinkedBeams(None)
+		for beam in linkedBeams:
+			for gear in beam.gears:
+				if gear.opt_rigidBeam or gear.opt_freeBeam:
+					# check if either of those two is this one
+					if gear.opt_rigidBeam is not self and gear.freeBeam is self:
+						gears.append(gear)
+					elif gear.opt_freeBeam is self:
+						gears.append(gear)
+						
+		return gears
+
+
 class Joint(object):
 
 	def __init__(self):
@@ -257,20 +279,33 @@ class Joint(object):
 class Gear(object):
 	def __init__(self, int_ID):
 		self.id = int_ID
+		self.position = vec2()
 		self.radius = 0.0
 		self.freeBeam_pos = -1.0
 		self.opt_rigidBeam_pos = -1.0
-		self.initWorldRotation = 0.0 # initial world rotation
-		
+		self.opt_freeBeam_pos = -1.0
+		self.rotation = 0.0
+
 		self.freeBeam = None
 		self.opt_rigidBeam = None # optional beam whose orientation is rigidly linked to this
+		self.opt_freeBeam = None # optional secondary free beam
 		self.neighbors = []
 		self.timestamp = 0
+
+	def positionOnGear(self, pos):
+		dist = (pos - self.position).length()
+		return abs(dist - self.radius) < 3.0
 
 	def delink(self):
 		if self.freeBeam:
 			self.freeBeam.gears.remove(self)
 		if self.opt_rigidBeam:
 			self.opt_rigidBeam.gears.remove(self)
+		if self.opt_freeBeam:
+			self.opt_freeBeam.gears.remove(self)
 		for gear in self.neighbors:
 			gear.neighbors.remove(self)
+
+	def touching(self, center, radius):
+		dist = (self.position - center).length()
+		return abs(dist - (self.radius + radius)) < 3.0

@@ -20,10 +20,12 @@ ROTAT = "ROTAT"
 JOINTS = 'JOINTS'
 BEAMS = 'BEAMS'
 GEARLST = 'GEARLST' # neighbors, for gears. also for beams.
-RGDBM = 'RIGIDBEAM'
+RGDBM_OPT = 'RIGIDBEAM_OPT'
+RGDBM_OPT_P = 'RIGIDBEAM_OPT_P'
 FREBM = 'FREEBEAM'
-RGDBM_P = 'RIGIDBEAM_P'
 FREBM_P = 'FREEBEAM_P'
+FREBM_OPT = 'FREEBEAM_OPT'
+FREBM_OPT_P = 'FREEBEAM_OPT_P'
 RADIUS = 'RADIUS'
 ID = 'ID'
 
@@ -104,11 +106,13 @@ def export(solver, filename):
 		gear_dict[RADIUS] = gear.radius
 		gear_dict[GEARLST] = [gear_names[neighbor] for neighbor in gear.neighbors]
 		gear_dict[FREEBEAM] = beam_names[gear.freeBeam]
-		gear_dict[FREEBEAM_P] = gear.freeBeam_pos	
+		gear_dict[FREEBEAM_P] = gear.freeBeam_pos
+		if gear.opt_freeBeam:
+			gear_dict[FREEBEAM_OPT] = beam_names[gear.opt_freeBeam]
+			gear_dict[FREEBEAM_OPT_P] = gear.opt_freeBeam_pos
 		if gear.opt_rigidBeam:
-			gear_dict[RIGIDBEAM] = beam_names[gear.opt_rigidBeam]
-			gear_dict[RIGIDBEAM_P] = gear.opt_rigidBeam_pos
-		geard_dict[ANGLE] = gear.initWorldRotation
+			gear_dict[RGDBM_OPT] = beam_names[gear.opt_rigidBeam]
+			gear_dict[RGDBM_OPT_P] = gear.opt_rigidBeam_pos
 		gear_dicts.append(gear_dict)
 
 
@@ -180,13 +184,18 @@ def load(filename):
 		gear.freeBeam.gears.append(gear)		
 		gear.freeBeam_pos = gear_dict[FREEBEAM_P]
 
-		if RIGIDBEAM in gear_dict:
-			gear.opt_rigidBeam = names_beams[gear_dict[RIGIDBEAM]]
+		if RGDBM_OPT in gear_dict:
+			gear.opt_rigidBeam = names_beams[gear_dict[RGDBM_OPT]]
 			gear.opt_rigidBeam.gears.append(gear)
-		if RIGIDBEAM_P in gear_dict:
+		if RGDBM_OPT_P in gear_dict:
 			gear.opt_rigidBeam_pos = gear_dict[RIGIDBEAM_P]
 
-		gear.initWorldRotation = gear_dict[ANGLE]
+		if FREEBEAM_OPT in gear_dict:
+			gear.opt_freeBeam = names_beams[gear_dict[FREEBEAM_OPT]]
+			gear.opt_freeBeam.gears.append(gear)
+		if FREEBEAM_OPT_P in gear_dict:
+			gear.opt_freeBeam_pos = gear_dict[FREEBEAM_OPT_P]			
+
 		solver.gears.append(gear)
 		names_gearNames[gear_dict[NAME]] = gear
 

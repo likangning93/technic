@@ -38,10 +38,12 @@ GEARS
 	-but anyway, should draw some kind of orientation something
 
 -UX
-	-additional mode
-	-click a beam and drag out to add a gear
-	-if you hit another gear, radius gets capped and a link is established
-	-releasing click on a beam binds the gear to the beam
+	-additional mode [done]
+	-click a beam and drag out to add a gear [done]
+		-or, click joint in which case you can bind gear to a beam
+	-if you hit another gear, radius gets capped [done]
+	-releasing click "close to" one of the two beams binds gear to that beam [done]
+	-gear selection will be on the edge of the gear [done]
 
 thoughts on cams
 -if cams are just ellipoids, we can define a distance from any point on the surface to the center

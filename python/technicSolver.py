@@ -54,6 +54,13 @@ class Solver(object):
 			beams = beams + unsolvedBeams
 			#print("done with beam " + str(beam.id))
 			#print(str(len(beams)))
+
+		# position all the gears
+		for gear in self.gears:
+			gear.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
+			if gear.opt_rigidBeam:
+				gear.rotation = gear.opt_rigidBeam.rotation
+
 		return True
 
 	def solveQuad(self, beam, timestamp):

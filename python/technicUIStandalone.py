@@ -1,9 +1,10 @@
 import pygame
 import sys
 import technicSolver
-from parts import Beam, Joint
+from parts import Beam, Joint, Gear
 import math2d
 from math2d import vec2
+import math
 import linkageImportExport
 import datetime
 import copy
@@ -52,6 +53,9 @@ class solverTestState(object):
 		for joint in beam.joints:
 			self.drawJoint(joint, beam)
 
+		for gear in beam.gears:
+			self.drawGear(gear)
+
 	def drawJoint(self, joint, beam):
 		if joint.isPrismatic:
 			pos1 = joint.positionRelative(beam)
@@ -70,6 +74,7 @@ class solverTestState(object):
 			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 6, 1)
 			pygame.draw.circle(screen, clr, (int(pos.x), int(pos.y)), 2, 1)	
 
+
 	def drawProspectiveBeam(self):
 		if self.state_mode_addBeams and self.state_mouseLastCoord is not None \
 		and self.state_mouseDownCoord is not None:
@@ -77,6 +82,63 @@ class solverTestState(object):
 			[(int(self.state_mouseDownCoord.x),int(self.state_mouseDownCoord.y)), \
 			(int(self.state_mouseLastCoord.x),int(self.state_mouseLastCoord.y))], 1)
 
+	def drawGearAttribs(self, gearCenter, radius, rotation, clr):
+		# draw main gear
+		if int(radius) > 3:
+			pygame.draw.circle(screen, clr, (int(gearCenter.x), int (gearCenter.y)), int(radius), 1)
+			pygame.draw.circle(screen, clr, (int(gearCenter.x), int (gearCenter.y)), int(4), 1)
+
+		# draw sprockets around the gear
+		halfRad = radius / 2.0
+		quartRad = radius / 4.0
+		direction = math2d.vectorAlongDirection(rotation)
+		direction *= halfRad
+		if quartRad > 1.0:
+			pygame.draw.circle(screen, clr, (int(gearCenter.x + direction.x), \
+				int(gearCenter.y + direction.y)), int(quartRad), 1)
+			pygame.draw.circle(screen, clr, (int(gearCenter.x - direction.x), \
+				int(gearCenter.y - direction.y)), int(quartRad), 1)	
+			pygame.draw.circle(screen, clr, (int(gearCenter.x + direction.y), \
+				int(gearCenter.y - direction.x)), int(quartRad), 1)	
+			pygame.draw.circle(screen, clr, (int(gearCenter.x - direction.y), \
+				int(gearCenter.y + direction.x)), int(quartRad), 1)
+
+	def drawGear(self, gear):
+		gearCenter = gear.position
+		rad = gear.radius
+		clr = blue
+		if gear is self.state_selectedGear or gear is self.state_prospGearLink:
+			clr = teal
+		self.drawGearAttribs(gearCenter, rad, gear.rotation, clr)
+
+	def drawProspectiveGear(self):
+		if self.state_mode_addGears and self.state_mouseLastCoord is not None \
+		and (self.state_prospGearBeam or self.state_prospGearJoint):
+			clr = teal			
+
+			gearCenter = self.getProspGearCenter()
+			rad = (gearCenter - self.state_mouseLastCoord).length()
+			self.drawGearAttribs(gearCenter, rad, 0.0, clr)
+
+			if self.state_prospGearJoint and self.state_prospGearBeam:
+				center = self.state_prospGearBeam.position
+				end = self.state_prospGearBeam.getPosAlongBeam(self.state_prospGearBeam.length)
+				pygame.draw.lines(screen, teal, False, \
+				[(int(center.x),int(center.y)), \
+				(int(end.x),int(end.y))], 10)							
+
+	def getProspGearCenter(self):
+		if self.state_mode_addGears and self.state_mouseLastCoord is not None \
+		and (self.state_prospGearBeam or self.state_prospGearJoint):
+
+			gearCenter = vec2()
+			if self.state_prospGearJoint is not None:
+				gearCenter = self.state_prospGearJoint.position
+			else:
+				gearCenter = self.state_prospGearBeam.getPosAlongBeam(self.state_prospGearBeamPos)
+			return gearCenter
+
+		return None
 
 	def __init__(self, filename=None):
 		# simulation state members
@@ -91,13 +153,17 @@ class solverTestState(object):
 
 		self.state_mouseDownCoord = None
 		self.state_mouseLastCoord = None
+		
+		self.state_prospGearBeam = None
+		self.state_prospGearBeamPos = -1.0
+		self.state_prospGearJoint = None
+		self.state_prospGearLink = None
 
 		self.state_selectedBeam = None
 		self.state_selectedJoint = None
-		self.state_soleStaticJoint = None
-		self.nextBeamID = -1
+		self.state_selectedGear = None
 
-		self.dAngle = 0.1
+		self.dAngle = 0.05
 
 		self.time = 1
 		self.solver = technicSolver.generateDefaultLinkage()
@@ -111,6 +177,7 @@ class solverTestState(object):
 				break
 
 		self.nextBeamID = len(self.solver.beams) + 1
+		self.nextGearID = len(self.solver.gears) + 1
 
 	def solve(self):
 		if self.state_play:
@@ -162,6 +229,12 @@ class solverTestState(object):
 	def getClickedJoints(self, pos_vec2):
 		return [joint for joint in self.solver.joints if joint.positionOnJoint(pos_vec2, clickDist)]
 
+	def getClickedGear(self, pos_vec2): # ONLY ONE!!
+		for gear in self.solver.gears:
+			if gear.positionOnGear(pos_vec2):
+				return gear
+		return None
+
 	def addBeam(self, beam):
 		self.solver.beams.append(beam)
 
@@ -178,6 +251,18 @@ class solverTestState(object):
 		for joint in jointsListCpy:
 			self.deleteJoint(joint)
 
+		gearsListCpy = copy.copy(beam.gears)
+		for gear in gearsListCpy:
+			self.deleteGear(gear)
+
+	def deleteJoint(self, joint):
+		joint.delink()
+		self.solver.joints.remove(joint)
+
+	def deleteGear(self, gear):
+		gear.delink()
+		self.solver.gears.remove(gear)
+
 	def addJointsOnBeams(self, pos_vec2, prismatic):
 		clickedBeams = self.getClickedBeams(pos_vec2)
 		# generate a new joint between every pair of clicked beams
@@ -186,11 +271,7 @@ class solverTestState(object):
 			newJ = clickedBeams[i].joinByWorldPos(clickedBeams[i + 1], pos_vec2, clickDist)
 			if newJ:
 				self.solver.joints.append(newJ)
-			newJ.isPrismatic = prismatic
-
-	def deleteJoint(self, joint):
-		joint.delink()
-		self.solver.joints.remove(joint)		
+			newJ.isPrismatic = prismatic		
 
 	def mousePressHandler(self, mousePos):
 		mousePos_vec2 = vec2(mousePos[0], mousePos[1])
@@ -198,8 +279,19 @@ class solverTestState(object):
 
 		if self.state_mode_dragManip:
 			self.selectItem(mousePos_vec2)
+			return
 
-		if self.state_mode_addBeams:
+		if self.state_mode_addGears:
+			# check if we've started the click somewhere valid for a gear (on a beam or joint)
+			beams = self.getClickedBeams(mousePos_vec2)
+			joints = self.getClickedJoints(mousePos_vec2)
+
+			if len(joints) > 0:
+				self.state_prospGearJoint = joints[0]
+			elif len(beams) > 0:
+				self.state_prospGearBeam = beams[0]
+				self.state_prospGearBeamPos = beams[0].getNearestPosAlongBeam(mousePos_vec2)
+				self.state_prospGearBeamPos *= beams[0].length
 			return
 
 		if self.state_mode_addRotationJoints:
@@ -215,12 +307,51 @@ class solverTestState(object):
 	def mouseDragHandler(self, mousePos):
 		mousePos_vec2 = vec2(mousePos[0], mousePos[1])
 		self.state_mouseLastCoord = mousePos_vec2
-		if self.state_mode_dragManip:
-			return
 
-		if self.state_mode_addBeams:
-			# nothing to do here lol
-			return
+		if self.state_mode_addGears and self.state_prospGearJoint is not None: # state_prospGearBeam used for "which beam to bind gear to"
+			gearCenter = self.getProspGearCenter()
+			radius = (gearCenter - mousePos_vec2).length()
+			if radius > 0.0001:
+				dirMouse = math2d.angleToOrientation(gearCenter - mousePos_vec2)
+				b1 = self.state_prospGearJoint.beam1
+				b2 = self.state_prospGearJoint.beam2
+				# compute nearer angle difference
+				diffb1 = abs(b1.rotation - dirMouse)
+				if diffb1 > math.pi:
+					diffb1 -= math.pi
+				diffb2 = abs(b2.rotation - dirMouse)
+				if diffb2 > math.pi:
+					diffb2 -= math.pi
+				if diffb1 < 0.4:
+					self.state_prospGearBeam = self.state_prospGearJoint.beam1
+				elif diffb2 < 0.4:
+					self.state_prospGearBeam = self.state_prospGearJoint.beam2
+				else:
+					self.state_prospGearBeam = None
+			
+		if self.state_mode_addGears and \
+		self.state_prospGearJoint is not None or self.state_prospGearBeam:
+			# check for a gear to link to: use the radius of this gear
+			# as usual, there's a "sitting on joint" and "sitting on beam" case
+			# either way, need to check all beams adjacent to one of the ones
+			# that this is linked to
+			linkedGears = []
+			gearCenter = self.getProspGearCenter()
+			radius = (gearCenter - mousePos_vec2).length()			
+			if self.state_prospGearJoint:
+				# something on a joint can only link with gears on adjacent beams
+				linkedGears += self.state_prospGearJoint.beam1.gears
+				linkedGears += self.state_prospGearJoint.beam2.gears
+				linkedGears = list(set(linkedGears))
+			else:
+				linkedGears += self.state_prospGearBeam.getLinkableGears()
+
+			self.state_prospGearLink = None
+			for gear in linkedGears:
+				if gear.touching(gearCenter, radius):
+					self.state_prospGearLink = gear
+					break
+
 
 	def mouseUpHandler(self, mousePos):
 		mousePos_vec2 = vec2(mousePos[0], mousePos[1])
@@ -236,6 +367,58 @@ class solverTestState(object):
 			newBeam.rotation = math2d.angleToOrientation(beamVec)
 			self.addBeam(newBeam)
 
+		if self.state_mode_addGears and \
+		(self.state_prospGearBeam or self.state_prospGearJoint):
+			# add the prospective gear
+			gearCenter = self.getProspGearCenter()
+			rad = (gearCenter - self.state_mouseLastCoord).length()
+			newGear = Gear(self.nextGearID)
+			self.nextGearID += 1
+			newGear.radius = rad
+			newGear.position = gearCenter
+			self.solver.gears.append(newGear)
+			# handle the joint case and the beam only case
+			if self.state_prospGearJoint:
+				freeBeam = self.state_prospGearJoint.getOtherbeam(self.state_prospGearBeam)
+				if not freeBeam:
+					freeBeam = self.state_prospGearJoint.beam1
+
+				newGear.freeBeam = freeBeam
+				dist = freeBeam.getNearestPosAlongBeam(gearCenter)
+				dist *= freeBeam.length
+				newGear.freeBeam_pos = dist
+				freeBeam.gears.append(newGear)
+
+				if self.state_prospGearBeam: # we have a beam to lock to
+					newGear.opt_rigidBeam = self.state_prospGearBeam
+					dist = newGear.opt_rigidBeam.getNearestPosAlongBeam(gearCenter)
+					dist *= newGear.opt_rigidBeam.length
+					newGear.opt_rigidBeam_pos = dist
+					self.state_prospGearBeam.gears.append(newGear)
+				else:
+					newGear.opt_freeBeam = self.state_prospGearJoint.getOtherbeam(freeBeam)
+					dist = newGear.opt_freeBeam.getNearestPosAlongBeam(gearCenter)
+					dist *= newGear.opt_freeBeam.length
+					newGear.opt_freeBeam_pos = dist
+					newGear.opt_freeBeam.gears.append(newGear)
+
+			else:
+				newGear.freeBeam = self.state_prospGearBeam
+				newGear.freeBeam_pos = self.state_prospGearBeamPos
+				self.state_prospGearBeam.gears.append(newGear)
+
+			if self.state_prospGearLink:
+				# adjust radius to match
+				newGear.radius = (newGear.position - self.state_prospGearLink.position).length()
+				newGear.radius -= self.state_prospGearLink.radius
+				newGear.neighbors.append(self.state_prospGearLink)
+				self.state_prospGearLink.neighbors.append(newGear)
+
+			self.state_prospGearBeam = None
+			self.state_prospGearBeamPos = -1
+			self.state_prospGearJoint = None
+			self.state_prospGearLink = None
+
 		# clear mouse coordinates, we don't care anymore
 		self.state_mouseDownCoord = None
 		self.state_mouseLastCoord = None
@@ -244,6 +427,8 @@ class solverTestState(object):
 		# set the first one of each as selected
 		beams = self.getClickedBeams(mousePos)
 		joints = self.getClickedJoints(mousePos)
+		self.state_selectedGear = self.getClickedGear(mousePos)
+
 		# unselect all if you're clicking nowhere
 		if len(beams) == 0 and len(joints) == 0:
 			self.state_selectedBeam = None
@@ -288,7 +473,7 @@ class solverTestState(object):
 			print("toggled labels")
 			self.state_show_labels = not self.state_show_labels # activate by pressing l
 
-		if key == pygame.K_s:
+		if key == pygame.K_d:
 			print("changed to select and drag mode")
 			self.resetModeState()
 			self.state_mode_dragManip = True # activate by pressing d
@@ -320,9 +505,13 @@ class solverTestState(object):
 					self.deleteBeam(self.state_selectedBeam)
 					self.state_selectedBeam = None
 					self.state_selectedJoint = None	
+					self.state_selectedGear = None						
 				elif self.state_selectedJoint: # prioritize deleting beams
 					self.deleteJoint(self.state_selectedJoint)
 					self.state_selectedJoint = None
+			if self.state_selectedGear:
+				self.deleteGear(self.state_selectedGear)
+				self.state_selectedGear = None		
 
 		if key == pygame.K_s:
 			filename = datetime.datetime.now().isoformat()
@@ -366,9 +555,11 @@ while True:
 			test.keyPressHandler(event.key)
 
 	test.solve()
-	# draw things
+	# draw prospectives
 	if test.state_mode_addBeams:
 		test.drawProspectiveBeam()
+	if test.state_mode_addGears:
+		test.drawProspectiveGear()		
 
 	# draw actual linkage
 	for beam in test.solver.beams:
