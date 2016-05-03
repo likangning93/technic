@@ -42,24 +42,23 @@ class Solver(object):
 		#print("timestep " + str(timestamp))
 		while len(beams) > 0:
 			beam = beams.pop()
-			#print("looking at beam " + str(beam.id))
 			if beam.timestamp != timestamp:
 				#continue
 				if not self.solveQuad(beam, timestamp):
 					return False
+			# update all gear chains attached to this beam
+			for gear in beam.gears:
+				gear.solve(timestamp)
+
 			# get linked beams
 			# add only the unsolved ones
 			linkedBeams = beam.listLinkedBeams(None)
 			unsolvedBeams = [nbeam for nbeam in linkedBeams if nbeam.timestamp != timestamp and not nbeam in beams]
 			beams = beams + unsolvedBeams
-			#print("done with beam " + str(beam.id))
-			#print(str(len(beams)))
 
 		# position all the gears
 		for gear in self.gears:
 			gear.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
-			if gear.opt_rigidBeam:
-				gear.rotation = gear.opt_rigidBeam.rotation
 
 		return True
 

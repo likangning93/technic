@@ -185,6 +185,12 @@ class Beam(object):
 		directionToEnd = -math2d.vectorAlongDirection(self.rotation)
 		self.position = joint.position + (directionToEnd * joint.getDistanceAlongBeam(self))
 
+	def snapToPos(self, worldPos, posAlong):
+		""" given a world position and position along this beam, position the beam """
+		# get direction from joint to end of beam
+		directionToEnd = -math2d.vectorAlongDirection(self.rotation)
+		self.position = worldPos + (directionToEnd * posAlong)
+
 	def snapToJoints(self, joint1, joint2):
 		""" 
 		Given two positioned joints along this beam, orient the beam.
@@ -309,3 +315,58 @@ class Gear(object):
 	def touching(self, center, radius):
 		dist = (self.position - center).length()
 		return abs(dist - (self.radius + radius)) < 3.0
+
+	def getSharedBeam(self, gear):
+		if self.freeBeam is gear.freeBeam:
+			return self.freeBeam
+		if self.freeBeam is gear.opt_rigidBeam:
+			return self.freeBeam
+		if self.freeBeam is gear.opt_freeBeam:
+			return self.freeBeam
+		if self.opt_rigidBeam is not None:
+			if self.opt_rigidBeam is gear.freeBeam:
+				return self.opt_rigidBeam
+			if self.opt_rigidBeam is gear.opt_rigidBeam:
+				return self.opt_rigidBeam
+			if self.opt_rigidBeam is gear.opt_freeBeam:
+				return self.opt_rigidBeam
+		if self.opt_freeBeam is not None:
+			if self.opt_freeBeam is gear.freeBeam:
+				return self.opt_freeBeam
+			if self.opt_freeBeam is gear.opt_rigidBeam:
+				return self.opt_freeBeam
+			if self.opt_freeBeam is gear.opt_freeBeam:
+				return self.opt_freeBeam							
+
+	def solve(self, timestamp):
+		# can't start solving if this isn't being driven by a beam's orientation
+		if not self.opt_rigidBeam:
+			return
+
+		# update this joint to match the beam that drives it
+		self.rotation = self.opt_rigidBeam.rotation
+		self.timestamp = timestamp
+
+		# do an iterative depth first traversal of all linked gears
+		# - everything in the "to expand" queue is "up to date"
+		gearsToExpand = [self]
+		while len(gearsToExpand) > 0:
+			gear = gearsToExpand.pop()
+			for neighbor in gear.neighbors:
+				if neighbor.timestamp != timestamp:
+					neighbor.timestamp = timestamp
+					# get local rotations to the shared beam
+					sharedBeam = gear.getSharedBeam(neighbor)
+					gearLocalRotation = gear.rotation - sharedBeam.rotation
+
+					neighborLocalRotation = -gearLocalRotation * (neighbor.radius / gear.radius)
+					neighbor.rotation = neighborLocalRotation + sharedBeam.rotation
+					gearsToExpand.append(neighbor)
+
+			# update any unsolved beams attached to this
+			if gear.opt_rigidBeam and gear.opt_rigidBeam.timestamp != timestamp:
+				commonJoint = gear.opt_rigidBeam.getSharedJoint(gear.freeBeam)
+				commonJoint.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
+				gear.opt_rigidBeam.snapToJoint(commonJoint)
+				gear.opt_rigidBeam.rotation = gear.rotation
+				gear.opt_rigidBeam.timestamp = timestamp
