@@ -165,7 +165,7 @@ class solverTestState(object):
 		self.state_selectedJoint = None
 		self.state_selectedGear = None
 
-		self.dAngle = 0.05
+		self.dAngle = 0.01
 
 		self.time = 1
 		self.solver = technicSolver.generateDefaultLinkage()
@@ -527,8 +527,8 @@ class solverTestState(object):
 
 #test = solverTestState("deadlock_case1.json")
 #test = solverTestState("deadlock_case2.json")
-#test = solverTestState("gear_case1.json")
-test = solverTestState("pinwheel.json")
+test = solverTestState("gear_case1.json")
+#test = solverTestState("pinwheel.json")
 #test = solverTestState()
 
 
