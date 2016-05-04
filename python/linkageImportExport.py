@@ -187,6 +187,7 @@ def load(filename):
 
 		if RGDBM_OPT in gear_dict:
 			gear.opt_rigidBeam = names_beams[gear_dict[RGDBM_OPT]]
+			gear.opt_rigidBeam_dRotation = gear.opt_rigidBeam.rotation
 			gear.opt_rigidBeam.gears.append(gear)
 		if RGDBM_OPT_P in gear_dict:
 			gear.opt_rigidBeam_pos = gear_dict[RGDBM_OPT_P]

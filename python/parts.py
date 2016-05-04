@@ -290,6 +290,7 @@ class Gear(object):
 		self.freeBeam_pos = -1.0
 		self.opt_rigidBeam_pos = -1.0
 		self.opt_freeBeam_pos = -1.0
+		self.opt_rigidBeam_dRotation = 0.0
 		self.rotation = 0.0
 
 		self.freeBeam = None
@@ -359,8 +360,9 @@ class Gear(object):
 					sharedBeam = gear.getSharedBeam(neighbor)
 					gearLocalRotation = gear.rotation - sharedBeam.rotation
 
-					neighborLocalRotation = -gearLocalRotation * (neighbor.radius / gear.radius)
+					neighborLocalRotation = -gearLocalRotation * (gear.radius / neighbor.radius)
 					neighbor.rotation = neighborLocalRotation + sharedBeam.rotation
+
 					gearsToExpand.append(neighbor)
 
 			# update any unsolved beams attached to this
@@ -370,5 +372,5 @@ class Gear(object):
 				commonJoint.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
 				gear.opt_rigidBeam.snapToJoint(commonJoint)
 				# orient
-				gear.opt_rigidBeam.rotation = gear.rotation
+				gear.opt_rigidBeam.rotation = gear.rotation - gear.opt_rigidBeam_dRotation# + math.pi / 2.0
 				gear.opt_rigidBeam.timestamp = timestamp

@@ -93,9 +93,11 @@ class solverTestState(object):
 		quartRad = radius / 4.0
 		direction = math2d.vectorAlongDirection(rotation)
 		direction *= halfRad
-		if quartRad > 1.0:
+		if quartRad / 2.0 > 1.0:
 			pygame.draw.circle(screen, clr, (int(gearCenter.x + direction.x), \
 				int(gearCenter.y + direction.y)), int(quartRad), 1)
+			pygame.draw.circle(screen, clr, (int(gearCenter.x + direction.x), \
+				int(gearCenter.y + direction.y)), int(quartRad / 2.0), 1)
 			pygame.draw.circle(screen, clr, (int(gearCenter.x - direction.x), \
 				int(gearCenter.y - direction.y)), int(quartRad), 1)	
 			pygame.draw.circle(screen, clr, (int(gearCenter.x + direction.y), \
@@ -394,6 +396,7 @@ class solverTestState(object):
 					dist = newGear.opt_rigidBeam.getNearestPosAlongBeam(gearCenter)
 					dist *= newGear.opt_rigidBeam.length
 					newGear.opt_rigidBeam_pos = dist
+					newGear.opt_rigidBeam_dRotation = self.state_prospGearBeam.rotation
 					self.state_prospGearBeam.gears.append(newGear)
 				else:
 					newGear.opt_freeBeam = self.state_prospGearJoint.getOtherbeam(freeBeam)
@@ -524,7 +527,8 @@ class solverTestState(object):
 
 #test = solverTestState("deadlock_case1.json")
 #test = solverTestState("deadlock_case2.json")
-test = solverTestState("gear_case1.json")
+#test = solverTestState("gear_case1.json")
+test = solverTestState("pinwheel.json")
 #test = solverTestState()
 
 
