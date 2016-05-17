@@ -235,7 +235,7 @@ def generateDefaultLinkage():
 	rootBeam = Beam(1)
 	rootBeam.length = 120.0
 	rootBeam.position = vec2(400.0, 300.0)
-	rootBeam.rotation = math.radians(90.0)
+	rootBeam.rotation = math.radians(270.0)
 
 	secondBeam = Beam(2)
 	secondBeam.length = 24.0

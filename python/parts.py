@@ -372,5 +372,5 @@ class Gear(object):
 				commonJoint.position = gear.freeBeam.getPosAlongBeam(gear.freeBeam_pos)
 				gear.opt_rigidBeam.snapToJoint(commonJoint)
 				# orient
-				gear.opt_rigidBeam.rotation = gear.rotation - gear.opt_rigidBeam_dRotation# + math.pi / 2.0
+				gear.opt_rigidBeam.rotation = gear.rotation #- gear.opt_rigidBeam_dRotation# + math.pi / 2.0
 				gear.opt_rigidBeam.timestamp = timestamp
